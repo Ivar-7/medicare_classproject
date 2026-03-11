@@ -23,6 +23,11 @@ public class DatabaseConfig {
         if (jdbcUrl == null) {
             throw new IllegalStateException("Database not initialized. AppContextListener may not have run.");
         }
+        try {
+            Class.forName("org.sqlite.JDBC");
+        } catch (ClassNotFoundException e) {
+            throw new SQLException("SQLite JDBC driver not found on classpath", e);
+        }
         return DriverManager.getConnection(jdbcUrl);
     }
 }
