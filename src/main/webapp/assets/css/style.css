@@ -1,0 +1,144 @@
+/* ─── CSS Variables ────────────────────────────────────────────────────────── */
+:root {
+    --primary:        #0d6efd;
+    --primary-subtle: #cfe2ff;
+    --surface:        #f8f9fa;
+    --topbar-height:  56px;
+    --sidebar-bg:     #1e2a3a;
+}
+
+/* ─── Global Layout ────────────────────────────────────────────────────────── */
+html, body {
+    height: 100%;
+}
+
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--surface);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    font-size: 0.9rem;
+}
+
+main.main-content {
+    flex: 1;
+}
+
+/* ─── Navbar ───────────────────────────────────────────────────────────────── */
+.navbar {
+    min-height: var(--topbar-height);
+}
+
+.navbar-brand {
+    font-size: 1.1rem;
+    letter-spacing: -0.02em;
+}
+
+.navbar .nav-link {
+    font-size: 0.85rem;
+    transition: background 0.15s;
+}
+
+.navbar .nav-link:hover,
+.navbar .nav-link.active {
+    background-color: rgba(255, 255, 255, 0.15);
+}
+
+/* ─── Stat Cards ───────────────────────────────────────────────────────────── */
+.stat-card {
+    border-radius: 0.75rem;
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.1) !important;
+}
+
+.stat-icon {
+    flex-shrink: 0;
+    width: 56px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.stat-value {
+    line-height: 1;
+    font-size: 2rem;
+}
+
+/* ─── Tables ───────────────────────────────────────────────────────────────── */
+.table th {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #6c757d;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.table td {
+    vertical-align: middle;
+}
+
+/* ─── Avatar Circle ────────────────────────────────────────────────────────── */
+.avatar-circle {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+/* ─── Cards ────────────────────────────────────────────────────────────────── */
+.card {
+    border-radius: 0.75rem;
+}
+
+.card-header {
+    border-radius: 0.75rem 0.75rem 0 0 !important;
+}
+
+/* ─── Breadcrumb ───────────────────────────────────────────────────────────── */
+.breadcrumb {
+    font-size: 0.8rem;
+}
+
+/* ─── Quick-action buttons ─────────────────────────────────────────────────── */
+.btn.d-flex.text-start {
+    padding: 0.65rem 1rem;
+    border-radius: 0.5rem;
+    text-align: left;
+}
+
+/* ─── Login Page ───────────────────────────────────────────────────────────── */
+.login-body {
+    background: linear-gradient(135deg, #0d6efd 0%, #1e2a3a 100%);
+}
+
+.login-card {
+    border-radius: 1rem;
+}
+
+/* ─── Footer ───────────────────────────────────────────────────────────────── */
+.footer {
+    margin-top: auto;
+}
+
+/* ─── Utilities ────────────────────────────────────────────────────────────── */
+.font-monospace {
+    font-family: 'Courier New', Courier, monospace;
+}
+
+.text-truncate {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}

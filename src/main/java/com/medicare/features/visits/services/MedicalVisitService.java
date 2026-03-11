@@ -1,0 +1,49 @@
+package com.medicare.features.visits.services;
+
+import com.medicare.features.visits.dao.MedicalVisitDAO;
+import com.medicare.models.MedicalVisit;
+
+import java.sql.SQLException;
+import java.util.List;
+import java.util.Optional;
+
+public class MedicalVisitService {
+
+    private final MedicalVisitDAO visitDAO = new MedicalVisitDAO();
+
+    public List<MedicalVisit> getAllVisits() throws SQLException {
+        return visitDAO.findAll();
+    }
+
+    public Optional<MedicalVisit> getVisitById(int id) throws SQLException {
+        return visitDAO.findById(id);
+    }
+
+    public List<MedicalVisit> getVisitsByStudent(String regNumber) throws SQLException {
+        return visitDAO.findByStudent(regNumber);
+    }
+
+    public List<MedicalVisit> getRecentVisits(int limit) throws SQLException {
+        return visitDAO.findRecent(limit);
+    }
+
+    public int countTodayVisits() throws SQLException {
+        return visitDAO.countToday();
+    }
+
+    public int countAllVisits() throws SQLException {
+        return visitDAO.countTotal();
+    }
+
+    public int createVisit(MedicalVisit visit) throws SQLException {
+        return visitDAO.save(visit);
+    }
+
+    public void updateVisit(MedicalVisit visit) throws SQLException {
+        visitDAO.update(visit);
+    }
+
+    public void deleteVisit(int visitId) throws SQLException {
+        visitDAO.delete(visitId);
+    }
+}
