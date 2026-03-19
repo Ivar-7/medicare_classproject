@@ -25,18 +25,63 @@
 
         <jsp:include page="/components/alerts.jsp" />
 
-        <!-- TODO: Implement visit create/edit form -->
         <div class="card border-0 shadow-sm">
-            <div class="card-body p-5 text-center text-muted">
-                <i class="bi bi-clipboard2-plus fs-1 d-block mb-3 opacity-25"></i>
-                <h6>Medical Visit Form</h6>
-                <p class="mb-0 small">
-                    Implement the visit form here.<br>
-                    Fields: Student (reg number), Doctor, Visit Date, Symptoms, Diagnosis.
-                </p>
-                <a href="${pageContext.request.contextPath}/visits" class="btn btn-sm btn-outline-secondary mt-3">
-                    <i class="bi bi-arrow-left me-1"></i>Back to Visits
-                </a>
+            <div class="card-body p-4 p-md-5">
+                <form method="post" action="${pageContext.request.contextPath}/visits" class="row g-3">
+
+                    <input type="hidden" name="visitId" value="${visit.visitId}">
+
+                    <div class="col-md-6">
+                        <label for="regNumber" class="form-label">Student Reg Number</label>
+                        <input id="regNumber" name="regNumber" type="text" class="form-control"
+                               value="${visit.regNumber}" placeholder="e.g. STU-001" required>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="doctorId" class="form-label">Doctor ID</label>
+                        <input id="doctorId" name="doctorId" type="number" class="form-control"
+                               value="${visit.doctorId}" min="1" step="1" placeholder="e.g. 12" required>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="visitDate" class="form-label">Visit Date &amp; Time</label>
+                        <input id="visitDate" name="visitDate" type="datetime-local" class="form-control"
+                               value="${visit.visitDateInput}" required>
+                    </div>
+
+                    <div class="col-12">
+                        <label for="symptoms" class="form-label">Symptoms</label>
+                        <textarea id="symptoms" name="symptoms" class="form-control" rows="3" maxlength="1000"
+                                  required>${visit.symptoms}</textarea>
+                    </div>
+
+                    <div class="col-12">
+                        <label for="diagnosis" class="form-label">Diagnosis</label>
+                        <textarea id="diagnosis" name="diagnosis" class="form-control" rows="3" maxlength="1000"
+                                  required>${visit.diagnosis}</textarea>
+                    </div>
+
+                    <div class="col-12 d-flex gap-2 pt-2">
+                        <button type="submit" name="action" value="${empty visit ? 'create' : 'update'}" class="btn btn-primary">
+                            <i class="bi bi-check2-circle me-1"></i>
+                            ${empty visit ? 'Save Visit' : 'Update Visit'}
+                        </button>
+                        <a href="${pageContext.request.contextPath}/visits" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-1"></i>Back to Visits
+                        </a>
+                    </div>
+                </form>
+
+                <c:if test="${not empty visit and visit.visitId > 0}">
+                    <hr class="my-4">
+                    <form method="post" action="${pageContext.request.contextPath}/visits"
+                          onsubmit="return confirm('Delete this medical visit? This action cannot be undone.');">
+                        <input type="hidden" name="visitId" value="${visit.visitId}">
+                        <button type="submit" name="action" value="delete" class="btn btn-outline-danger">
+                            <i class="bi bi-trash me-1"></i>Delete Visit
+                        </button>
+                    </form>
+                </c:if>
             </div>
         </div>
 

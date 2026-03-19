@@ -37,6 +37,12 @@ public class MedicalVisit {
     public String        getDiagnosis()   { return diagnosis;   }
     public String        getStudentName() { return studentName; }
     public String        getDoctorName()  { return doctorName;  }
+    public String        getVisitDateInput() {
+        if (visitDate == null) {
+            return "";
+        }
+        return visitDate.withSecond(0).withNano(0).toString();
+    }
 
     // ── Setters ──────────────────────────────────────────────────────────────
 
