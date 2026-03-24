@@ -27,20 +27,58 @@
 
         <jsp:include page="/components/alerts.jsp" />
 
-        <!-- TODO: Implement prescription create/edit form -->
-        <div class="card border-0 shadow-sm">
-            <div class="card-body p-5 text-center text-muted">
-                <i class="bi bi-capsule fs-1 d-block mb-3 opacity-25"></i>
-                <h6>Prescription Form</h6>
-                <p class="mb-0 small">
-                    Implement the prescription form here.<br>
-                    Fields: Visit ID, Medicine Name, Dosage, Duration.
-                </p>
-                <a href="${pageContext.request.contextPath}/prescriptions" class="btn btn-sm btn-outline-secondary mt-3">
-                    <i class="bi bi-arrow-left me-1"></i>Back to Prescriptions
-                </a>
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-4">
+        <h6 class="fw-bold mb-3">Prescription Details</h6>
+        
+        <form action="${pageContext.request.contextPath}/prescriptions" method="POST">
+    
+            <input type="hidden" name="prescriptionId" value="${prescription.prescriptionId}">
+
+            <div class="mb-3">
+                <label class="form-label">Visit ID</label>
+                <input type="number" name="visitId" class="form-control" 
+                       value="${not empty prescription ? prescription.visitId : param.visitId}" required>
+                <div class="form-text">Enter the numeric ID from the medical visit.</div>
             </div>
-        </div>
+
+            <div class="mb-3">
+                <label class="form-label">Medicine Name</label>
+                <input type="text" name="medicineName" class="form-control" 
+                       value="${not empty prescription ? prescription.medicineName : param.medicineName}" required>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Dosage</label>
+                    <input type="text" name="dosage" class="form-control" placeholder="e.g. 500mg" 
+                           value="${not empty prescription ? prescription.dosage : param.dosage}" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Duration</label>
+                    <input type="text" name="duration" class="form-control" placeholder="e.g. 7 days" 
+                           value="${not empty prescription ? prescription.duration : param.duration}" required>
+                </div>
+            </div>
+
+            <hr class="my-4">
+
+            <div class="d-flex justify-content-between">
+                <a href="${pageContext.request.contextPath}/prescriptions" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-1"></i>Cancel
+                </a>
+                <button type="submit" class="btn btn-primary px-4">
+                    <i class="bi bi-check-lg me-1"></i>Save Prescription
+                </button>
+            </div>
+        </form>
+    </div>
+</div>                
+      <!--<a href="${pageContext.request.contextPath}/prescriptions" class="btn btn-sm btn-outline-secondary mt-3">
+    <i class="bi bi-arrow-left me-1"></i>Back to Prescriptions
+</a>
+            </div>
+        </div>-->
 
     </div>
 </main>
