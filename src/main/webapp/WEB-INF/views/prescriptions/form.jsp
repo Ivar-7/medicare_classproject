@@ -38,26 +38,34 @@
             <div class="mb-3">
                 <label class="form-label">Visit ID</label>
                 <input type="number" name="visitId" class="form-control" 
-                       value="${not empty prescription ? prescription.visitId : param.visitId}" required>
+                       value="${prescription.visitId}" required>
                 <div class="form-text">Enter the numeric ID from the medical visit.</div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Student ID (Reg Number)</label>
+                <input type="text" name="studentRegNumber" class="form-control"
+                       value="${not empty prescription.studentRegNumber ? prescription.studentRegNumber : studentRegNumber}"
+                       placeholder="e.g. STU-001" required>
+                <div class="form-text">Must match the student linked to the selected visit.</div>
             </div>
 
             <div class="mb-3">
                 <label class="form-label">Medicine Name</label>
                 <input type="text" name="medicineName" class="form-control" 
-                       value="${not empty prescription ? prescription.medicineName : param.medicineName}" required>
+                       value="${prescription.medicineName}" required>
             </div>
 
             <div class="row">
                 <div class="col-md-6 mb-3">
                     <label class="form-label">Dosage</label>
                     <input type="text" name="dosage" class="form-control" placeholder="e.g. 500mg" 
-                           value="${not empty prescription ? prescription.dosage : param.dosage}" required>
+                              value="${prescription.dosage}" required>
                 </div>
                 <div class="col-md-6 mb-3">
                     <label class="form-label">Duration</label>
                     <input type="text" name="duration" class="form-control" placeholder="e.g. 7 days" 
-                           value="${not empty prescription ? prescription.duration : param.duration}" required>
+                              value="${prescription.duration}" required>
                 </div>
             </div>
 

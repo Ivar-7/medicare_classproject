@@ -23,6 +23,10 @@ public class MedicalVisitService {
         return visitDAO.findByStudent(regNumber);
     }
 
+    public List<MedicalVisit> getVisitsByDoctor(int doctorId) throws SQLException {
+        return visitDAO.findByDoctor(doctorId);
+    }
+
     public List<MedicalVisit> getRecentVisits(int limit) throws SQLException {
         return visitDAO.findRecent(limit);
     }
@@ -33,6 +37,10 @@ public class MedicalVisitService {
 
     public int countAllVisits() throws SQLException {
         return visitDAO.countTotal();
+    }
+
+    public int countVisitsByDoctor(int doctorId) throws SQLException {
+        return visitDAO.countByDoctor(doctorId);
     }
 
     public int createVisit(MedicalVisit visit) throws SQLException {

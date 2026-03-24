@@ -22,17 +22,32 @@ public class MedicalVisitDAO {
         "LEFT JOIN users    u ON v.doctor_id  = u.user_id ";
 
     private MedicalVisit mapRow(ResultSet rs) throws SQLException {
+        String visitDateRaw = rs.getString("visit_date");
+        LocalDateTime visitDate = parseVisitDate(visitDateRaw);
+
         MedicalVisit visit = new MedicalVisit(
             rs.getInt("visit_id"),
             rs.getString("reg_number"),
             rs.getInt("doctor_id"),
-            LocalDateTime.parse(rs.getString("visit_date")),
+            visitDate,
             rs.getString("symptoms"),
             rs.getString("diagnosis")
         );
         try { visit.setStudentName(rs.getString("student_name")); } catch (SQLException ignored) { }
         try { visit.setDoctorName(rs.getString("doctor_name"));   } catch (SQLException ignored) { }
         return visit;
+    }
+
+    private LocalDateTime parseVisitDate(String value) {
+        if (value == null || value.isBlank()) {
+            return LocalDateTime.now();
+        }
+        try {
+            return LocalDateTime.parse(value);
+        } catch (Exception ignored) {
+            // SQLite timestamps can appear as "yyyy-MM-dd HH:mm:ss".
+            return LocalDateTime.parse(value.replace(' ', 'T'));
+        }
     }
 
     public List<MedicalVisit> findAll() throws SQLException {
@@ -70,6 +85,19 @@ public class MedicalVisitDAO {
         return visits;
     }
 
+    public List<MedicalVisit> findByDoctor(int doctorId) throws SQLException {
+        String sql = SELECT_WITH_JOINS + "WHERE v.doctor_id = ? ORDER BY v.visit_date DESC";
+        List<MedicalVisit> visits = new ArrayList<>();
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, doctorId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) visits.add(mapRow(rs));
+            }
+        }
+        return visits;
+    }
+
     public List<MedicalVisit> findRecent(int limit) throws SQLException {
         String sql = SELECT_WITH_JOINS + "ORDER BY v.visit_date DESC LIMIT ?";
         List<MedicalVisit> visits = new ArrayList<>();
@@ -98,6 +126,17 @@ public class MedicalVisitDAO {
              Statement stmt = conn.createStatement();
              ResultSet rs   = stmt.executeQuery(sql)) {
             return rs.next() ? rs.getInt(1) : 0;
+        }
+    }
+
+    public int countByDoctor(int doctorId) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM medical_visits WHERE doctor_id = ?";
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, doctorId);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() ? rs.getInt(1) : 0;
+            }
         }
     }
 

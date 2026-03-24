@@ -25,18 +25,53 @@
 
         <jsp:include page="/components/alerts.jsp" />
 
-        <!-- TODO: Implement treatment note create/edit form -->
         <div class="card border-0 shadow-sm">
-            <div class="card-body p-5 text-center text-muted">
-                <i class="bi bi-journal-plus fs-1 d-block mb-3 opacity-25"></i>
-                <h6>Treatment Note Form</h6>
-                <p class="mb-0 small">
-                    Implement the treatment note form here.<br>
-                    Fields: Visit ID, Clinical Notes (textarea), Follow-Up Date.
-                </p>
-                <a href="${pageContext.request.contextPath}/notes" class="btn btn-sm btn-outline-secondary mt-3">
-                    <i class="bi bi-arrow-left me-1"></i>Back to Notes
-                </a>
+            <div class="card-body p-4 p-md-5">
+                <form method="post" action="${pageContext.request.contextPath}/notes" class="row g-3">
+
+                    <input type="hidden" name="noteId" value="${note.noteId}">
+
+                    <div class="col-md-4">
+                        <label for="visitId" class="form-label">Visit ID</label>
+                        <input id="visitId" name="visitId" type="number" class="form-control"
+                               value="${note.visitId}" min="1" step="1" required>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label for="followUpDate" class="form-label">Follow-Up Date</label>
+                        <input id="followUpDate" name="followUpDate" type="date" class="form-control"
+                               value="${note.followUpDate}">
+                        <div class="form-text">Optional field for scheduling a follow-up review.</div>
+                    </div>
+
+                    <div class="col-12">
+                        <label for="clinicalNotes" class="form-label">Clinical Notes</label>
+                        <textarea id="clinicalNotes" name="clinicalNotes" class="form-control" rows="6"
+                                  maxlength="4000" required>${note.clinicalNotes}</textarea>
+                    </div>
+
+                    <div class="col-12 d-flex gap-2 pt-2">
+                        <button type="submit" name="action" value="${empty note ? 'create' : 'update'}"
+                                class="btn btn-primary">
+                            <i class="bi bi-check2-circle me-1"></i>
+                            ${empty note ? 'Save Note' : 'Update Note'}
+                        </button>
+                        <a href="${pageContext.request.contextPath}/notes" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-1"></i>Back to Notes
+                        </a>
+                    </div>
+                </form>
+
+                <c:if test="${not empty note and note.noteId > 0}">
+                    <hr class="my-4">
+                    <form method="post" action="${pageContext.request.contextPath}/notes"
+                          onsubmit="return confirm('Delete this treatment note? This action cannot be undone.');">
+                        <input type="hidden" name="noteId" value="${note.noteId}">
+                        <button type="submit" name="action" value="delete" class="btn btn-outline-danger">
+                            <i class="bi bi-trash me-1"></i>Delete Note
+                        </button>
+                    </form>
+                </c:if>
             </div>
         </div>
 

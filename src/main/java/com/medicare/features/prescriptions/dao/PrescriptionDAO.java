@@ -14,18 +14,25 @@ import java.util.Optional;
 
 public class PrescriptionDAO {
 
+    private static final String SELECT_WITH_VISIT =
+        "SELECT p.*, v.reg_number AS student_reg_number " +
+        "FROM prescriptions p " +
+        "LEFT JOIN medical_visits v ON p.visit_id = v.visit_id ";
+
     private Prescription mapRow(ResultSet rs) throws SQLException {
-        return new Prescription(
+        Prescription prescription = new Prescription(
             rs.getInt("prescription_id"),
             rs.getInt("visit_id"),
             rs.getString("medicine_name"),
             rs.getString("dosage"),
             rs.getString("duration")
         );
+        try { prescription.setStudentRegNumber(rs.getString("student_reg_number")); } catch (SQLException ignored) { }
+        return prescription;
     }
 
     public List<Prescription> findAll() throws SQLException {
-        String sql = "SELECT * FROM prescriptions ORDER BY prescription_id DESC";
+        String sql = SELECT_WITH_VISIT + "ORDER BY p.prescription_id DESC";
         List<Prescription> list = new ArrayList<>();
         try (Connection conn = DatabaseConfig.getConnection();
              Statement stmt = conn.createStatement();
@@ -36,7 +43,7 @@ public class PrescriptionDAO {
     }
 
     public Optional<Prescription> findById(int id) throws SQLException {
-        String sql = "SELECT * FROM prescriptions WHERE prescription_id = ?";
+        String sql = SELECT_WITH_VISIT + "WHERE p.prescription_id = ?";
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);
@@ -47,7 +54,7 @@ public class PrescriptionDAO {
     }
 
     public List<Prescription> findByVisit(int visitId) throws SQLException {
-        String sql = "SELECT * FROM prescriptions WHERE visit_id = ? ORDER BY prescription_id";
+        String sql = SELECT_WITH_VISIT + "WHERE p.visit_id = ? ORDER BY p.prescription_id";
         List<Prescription> list = new ArrayList<>();
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {

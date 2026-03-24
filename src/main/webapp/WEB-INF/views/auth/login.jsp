@@ -26,6 +26,14 @@
                 <p class="text-muted small">University Health Management System</p>
             </div>
 
+            <!-- Success Alert -->
+            <c:if test="${not empty requestScope.success}">
+                <div class="alert alert-success d-flex align-items-center gap-2 py-2 mb-3" role="alert">
+                    <i class="bi bi-check-circle-fill flex-shrink-0"></i>
+                    <small>${requestScope.success}</small>
+                </div>
+            </c:if>
+
             <!-- Error Alert -->
             <c:if test="${not empty requestScope.error}">
                 <div class="alert alert-danger d-flex align-items-center gap-2 py-2" role="alert">
@@ -71,9 +79,16 @@
         </div>
 
         <div class="card-footer text-center bg-light border-0 py-3">
-            <small class="text-muted">
+            <small class="text-muted d-block mb-2">
                 <i class="bi bi-shield-lock me-1"></i>
                 Default credentials: <strong>admin</strong> / <strong>admin123</strong>
+            </small>
+            <hr class="my-2">
+            <small class="text-muted">
+                Don't have an account? 
+                <a href="${pageContext.request.contextPath}/register" class="text-primary fw-semibold text-decoration-none">
+                    Sign up as staff
+                </a>
             </small>
         </div>
 

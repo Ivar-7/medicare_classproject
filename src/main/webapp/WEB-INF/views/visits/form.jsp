@@ -34,19 +34,20 @@
                     <div class="col-md-6">
                         <label for="regNumber" class="form-label">Student Reg Number</label>
                         <input id="regNumber" name="regNumber" type="text" class="form-control"
-                               value="${visit.regNumber}" placeholder="e.g. STU-001" required>
+                               value="${visit.regNumber}" placeholder="Enter existing student reg number" required>
                     </div>
 
                     <div class="col-md-6">
                         <label for="doctorId" class="form-label">Doctor ID</label>
                         <input id="doctorId" name="doctorId" type="number" class="form-control"
-                               value="${visit.doctorId}" min="1" step="1" placeholder="e.g. 12" required>
+                               value="${visit.doctorId}" min="1" step="1" placeholder="Enter existing doctor user ID" required>
                     </div>
 
                     <div class="col-md-6">
-                        <label for="visitDate" class="form-label">Visit Date &amp; Time</label>
-                        <input id="visitDate" name="visitDate" type="datetime-local" class="form-control"
-                               value="${visit.visitDateInput}" required>
+                        <label for="visitDateDisplay" class="form-label">Visit Date</label>
+                           <input id="visitDateDisplay" type="text" class="form-control"
+                               value="Today (set automatically when saved)" readonly>
+                           <div class="form-text">Visit date is always recorded as today's date/time.</div>
                     </div>
 
                     <div class="col-12">

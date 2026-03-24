@@ -8,6 +8,9 @@ public class Prescription {
     private String dosage;
     private String duration;
 
+    // Transient display/validation field populated from visit JOIN
+    private String studentRegNumber;
+
     public Prescription() { }
 
     public Prescription(int prescriptionId, int visitId,
@@ -26,6 +29,7 @@ public class Prescription {
     public String getMedicineName()   { return medicineName;   }
     public String getDosage()         { return dosage;         }
     public String getDuration()       { return duration;       }
+    public String getStudentRegNumber() { return studentRegNumber; }
 
     // ── Setters ──────────────────────────────────────────────────────────────
 
@@ -34,6 +38,7 @@ public class Prescription {
     public void setMedicineName(String medicineName)   { this.medicineName   = medicineName;   }
     public void setDosage(String dosage)               { this.dosage         = dosage;         }
     public void setDuration(String duration)           { this.duration       = duration;       }
+    public void setStudentRegNumber(String studentRegNumber) { this.studentRegNumber = studentRegNumber; }
 
     @Override
     public String toString() {

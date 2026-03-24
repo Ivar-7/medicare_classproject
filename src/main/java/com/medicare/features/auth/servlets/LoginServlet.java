@@ -22,7 +22,7 @@ public class LoginServlet extends HttpServlet {
             throws ServletException, IOException {
         HttpSession session = request.getSession(false);
         if (session != null && session.getAttribute("currentUser") != null) {
-            response.sendRedirect(request.getContextPath() + "/home");
+            response.sendRedirect(request.getContextPath() + "/dashboard");
             return;
         }
         request.getRequestDispatcher("/WEB-INF/views/auth/login.jsp").forward(request, response);
@@ -40,7 +40,7 @@ public class LoginServlet extends HttpServlet {
                 HttpSession session = request.getSession(true);
                 session.setAttribute("currentUser", user.get());
                 session.setMaxInactiveInterval(60 * 60); // 1 hour
-                response.sendRedirect(request.getContextPath() + "/home");
+                response.sendRedirect(request.getContextPath() + "/dashboard");
             } else {
                 request.setAttribute("error", "Invalid username or password.");
                 request.getRequestDispatcher("/WEB-INF/views/auth/login.jsp").forward(request, response);

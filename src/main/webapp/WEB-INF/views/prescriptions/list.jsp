@@ -39,6 +39,7 @@
                                     <tr>
                                         <th class="px-4 py-3">ID</th>
                                         <th class="py-3">Visit ID</th>
+                                        <th class="py-3">Student ID</th>
                                         <th class="py-3">Medicine</th>
                                         <th class="py-3">Dosage</th>
                                         <th class="py-3">Duration</th>
@@ -55,6 +56,7 @@
                     Visit #${p.visitId}
                 </a>
             </td>
+            <td class="text-muted font-monospace small">${p.studentRegNumber}</td>
             <td class="fw-medium">${p.medicineName}</td>
             <td class="text-muted">${p.dosage}</td>
             <td class="text-muted">${p.duration}</td>

@@ -13,6 +13,14 @@
                 <h5 class="mb-1 fw-bold"><i class="bi bi-shield-check text-primary me-2"></i>Audit Logs</h5>
                 <p class="text-muted mb-0 small">System activity and security monitoring.</p>
             </div>
+            <c:if test="${not empty sessionScope.currentUser and sessionScope.currentUser.roleName == 'Admin'}">
+                <form method="post" action="${pageContext.request.contextPath}/audit"
+                      onsubmit="return confirm('Clear all audit logs? This action cannot be undone.');">
+                    <button type="submit" name="action" value="clear" class="btn btn-outline-danger btn-sm">
+                        <i class="bi bi-trash me-1"></i>Clear Logs
+                    </button>
+                </form>
+            </c:if>
         </div>
 
         <jsp:include page="/components/alerts.jsp" />

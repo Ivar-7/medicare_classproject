@@ -2,7 +2,7 @@ package com.medicare.models;
 
 public class User {
 
-    public enum Role { Admin, Doctor, Receptionist }
+    public enum Role { Admin, Doctor, Receptionist, Technician }
 
     private int    userId;
     private String username;

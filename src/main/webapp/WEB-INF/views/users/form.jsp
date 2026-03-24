@@ -25,18 +25,70 @@
 
         <jsp:include page="/components/alerts.jsp" />
 
-        <!-- TODO: Implement user create/edit form -->
         <div class="card border-0 shadow-sm">
-            <div class="card-body p-5 text-center text-muted">
-                <i class="bi bi-person-gear fs-1 d-block mb-3 opacity-25"></i>
-                <h6>User Form</h6>
-                <p class="mb-0 small">
-                    Implement the user management form here.<br>
-                    Fields: Username, Password, Full Name, Role (Admin / Doctor / Receptionist).
-                </p>
-                <a href="${pageContext.request.contextPath}/users" class="btn btn-sm btn-outline-secondary mt-3">
-                    <i class="bi bi-arrow-left me-1"></i>Back to Users
-                </a>
+            <div class="card-body p-4 p-md-5">
+                <form method="post" action="${pageContext.request.contextPath}/users" class="row g-3">
+
+                    <input type="hidden" name="userId" value="${user.userId}">
+
+                    <div class="col-md-6">
+                        <label for="fullName" class="form-label">Full Name</label>
+                        <input id="fullName" name="fullName" type="text" class="form-control"
+                               value="${user.fullName}" maxlength="120" required>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="username" class="form-label">Username</label>
+                        <input id="username" name="username" type="text" class="form-control"
+                               value="${user.username}" maxlength="80" required>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="role" class="form-label">Role</label>
+                        <select id="role" name="role" class="form-select" required>
+                            <option value="" ${empty user.roleName ? 'selected' : ''}>Select role</option>
+                            <option value="Admin" ${user.roleName == 'Admin' ? 'selected' : ''}>Admin</option>
+                            <option value="Doctor" ${user.roleName == 'Doctor' ? 'selected' : ''}>Doctor</option>
+                            <option value="Receptionist" ${user.roleName == 'Receptionist' ? 'selected' : ''}>Receptionist</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="password" class="form-label">
+                            ${empty user ? 'Password' : 'New Password (Optional)'}
+                        </label>
+                        <input id="password" name="password" type="password" class="form-control"
+                               ${empty user ? 'required' : ''}>
+                        <div class="form-text">
+                            <c:choose>
+                                <c:when test="${empty user}">Required for new user accounts.</c:when>
+                                <c:otherwise>Leave empty to keep the current password unchanged.</c:otherwise>
+                            </c:choose>
+                        </div>
+                    </div>
+
+                    <div class="col-12 d-flex gap-2 pt-2">
+                        <button type="submit" name="action" value="${empty user ? 'create' : 'update'}"
+                                class="btn btn-primary">
+                            <i class="bi bi-check2-circle me-1"></i>
+                            ${empty user ? 'Create User' : 'Update User'}
+                        </button>
+                        <a href="${pageContext.request.contextPath}/users" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-1"></i>Back to Users
+                        </a>
+                    </div>
+                </form>
+
+                <c:if test="${not empty user and user.userId > 0}">
+                    <hr class="my-4">
+                    <form method="post" action="${pageContext.request.contextPath}/users"
+                          onsubmit="return confirm('Delete this user account? This action cannot be undone.');">
+                        <input type="hidden" name="userId" value="${user.userId}">
+                        <button type="submit" name="action" value="delete" class="btn btn-outline-danger">
+                            <i class="bi bi-trash me-1"></i>Delete User
+                        </button>
+                    </form>
+                </c:if>
             </div>
         </div>
 
