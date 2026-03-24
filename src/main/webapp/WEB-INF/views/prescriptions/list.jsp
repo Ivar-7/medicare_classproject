@@ -46,27 +46,35 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <c:forEach var="p" items="${prescriptions}">
-                                        <tr>
-                                            <td class="px-4 text-muted font-monospace small">#${p.prescriptionId}</td>
-                                            <td>
-                                                <a href="${pageContext.request.contextPath}/visits/${p.visitId}"
-                                                   class="text-decoration-none">
-                                                    Visit #${p.visitId}
-                                                </a>
-                                            </td>
-                                            <td class="fw-medium">${p.medicineName}</td>
-                                            <td class="text-muted">${p.dosage}</td>
-                                            <td class="text-muted">${p.duration}</td>
-                                            <td class="text-end px-4">
-                                                <a href="${pageContext.request.contextPath}/prescriptions/${p.prescriptionId}"
-                                                   class="btn btn-sm btn-outline-secondary">
-                                                    <i class="bi bi-pencil"></i>
-                                                </a>
-                                            </td>
-                                        </tr>
-                                    </c:forEach>
-                                </tbody>
+    <c:forEach var="p" items="${prescriptions}">
+        <tr>
+            <td class="px-4 text-muted font-monospace small">#${p.prescriptionId}</td>
+            <td>
+                <a href="${pageContext.request.contextPath}/visits/${p.visitId}"
+                   class="text-decoration-none">
+                    Visit #${p.visitId}
+                </a>
+            </td>
+            <td class="fw-medium">${p.medicineName}</td>
+            <td class="text-muted">${p.dosage}</td>
+            <td class="text-muted">${p.duration}</td>
+            <td class="text-end px-4">
+                <!--Edit Button-->
+                <a href="${pageContext.request.contextPath}/prescriptions/${p.prescriptionId}"
+                   class="btn btn-sm btn-outline-secondary">
+                    <i class="bi bi-pencil"></i>
+                </a>
+
+                <!--Delete Button-->
+                <a href="${pageContext.request.contextPath}/prescriptions/delete/${p.prescriptionId}" 
+                   class="btn btn-sm btn-outline-danger ms-1"
+                   onclick="return confirm('Are you sure you want to delete this prescription?')">
+                    <i class="bi bi-trash"></i>
+                </a>
+            </td>
+        </tr>
+    </c:forEach>
+</tbody>
                             </table>
                         </div>
                     </c:otherwise>
