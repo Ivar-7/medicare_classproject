@@ -58,11 +58,14 @@ public class SchemaInit {
                 "  prescription_id INTEGER PRIMARY KEY AUTOINCREMENT," +
                 "  visit_id        INTEGER NOT NULL," +
                 "  medicine_name   TEXT    NOT NULL," +
+                "  disease         TEXT," +
                 "  dosage          TEXT," +
                 "  duration        TEXT," +
                 "  FOREIGN KEY (visit_id) REFERENCES medical_visits(visit_id)" +
                 ")"
             );
+
+            ensurePrescriptionsDiseaseColumn(stmt);
 
             stmt.execute(
                 "CREATE TABLE IF NOT EXISTS treatment_notes (" +
@@ -85,7 +88,34 @@ public class SchemaInit {
                 ")"
             );
 
+            stmt.execute(
+                "CREATE TABLE IF NOT EXISTS auth_tokens (" +
+                "  token_id    INTEGER PRIMARY KEY AUTOINCREMENT," +
+                "  user_id     INTEGER NOT NULL," +
+                "  token_hash  TEXT    NOT NULL UNIQUE," +
+                "  expires_at  TEXT    NOT NULL," +
+                "  created_at  TEXT    NOT NULL," +
+                "  FOREIGN KEY (user_id) REFERENCES users(user_id)" +
+                ")"
+            );
+
             logger.info("Database schema verified/created successfully.");
+        }
+    }
+
+    private static void ensurePrescriptionsDiseaseColumn(Statement stmt) throws SQLException {
+        boolean hasDisease = false;
+        try (ResultSet rs = stmt.executeQuery("PRAGMA table_info(prescriptions)")) {
+            while (rs.next()) {
+                if ("disease".equalsIgnoreCase(rs.getString("name"))) {
+                    hasDisease = true;
+                    break;
+                }
+            }
+        }
+        if (!hasDisease) {
+            stmt.execute("ALTER TABLE prescriptions ADD COLUMN disease TEXT");
+            logger.info("Schema migration applied: added prescriptions.disease column");
         }
     }
 

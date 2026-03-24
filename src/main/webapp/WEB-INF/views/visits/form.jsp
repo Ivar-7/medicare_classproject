@@ -56,12 +56,6 @@
                                   required>${visit.symptoms}</textarea>
                     </div>
 
-                    <div class="col-12">
-                        <label for="diagnosis" class="form-label">Diagnosis</label>
-                        <textarea id="diagnosis" name="diagnosis" class="form-control" rows="3" maxlength="1000"
-                                  required>${visit.diagnosis}</textarea>
-                    </div>
-
                     <div class="col-12 d-flex gap-2 pt-2">
                         <button type="submit" name="action" value="${empty visit ? 'create' : 'update'}" class="btn btn-primary">
                             <i class="bi bi-check2-circle me-1"></i>

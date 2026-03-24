@@ -56,6 +56,13 @@
                        value="${prescription.medicineName}" required>
             </div>
 
+            <div class="mb-3">
+                <label class="form-label">Disease</label>
+                <input type="text" name="disease" class="form-control"
+                       value="${prescription.disease}" placeholder="e.g. Hypertension" required>
+                <div class="form-text">Enter the disease or diagnosis.</div>
+            </div>
+
             <div class="row">
                 <div class="col-md-6 mb-3">
                     <label class="form-label">Dosage</label>
@@ -81,7 +88,8 @@
             </div>
         </form>
     </div>
-</div>                
+</div>
+
       <!--<a href="${pageContext.request.contextPath}/prescriptions" class="btn btn-sm btn-outline-secondary mt-3">
     <i class="bi bi-arrow-left me-1"></i>Back to Prescriptions
 </a>

@@ -88,14 +88,13 @@ public class VisitServlet extends HttpServlet {
         String regNumber = trim(request.getParameter("regNumber"));
         String doctorIdRaw = trim(request.getParameter("doctorId"));
         String symptoms = trim(request.getParameter("symptoms"));
-        String diagnosis = trim(request.getParameter("diagnosis"));
 
         int doctorId = 0;
         LocalDateTime visitDate = LocalDateTime.now();
 
         if (regNumber == null || regNumber.isBlank()) {
             forwardWithError(request, response, "Student is required.", visitIdRaw, regNumber, doctorIdRaw,
-                             symptoms, diagnosis);
+                             symptoms);
             return;
         }
 
@@ -103,14 +102,14 @@ public class VisitServlet extends HttpServlet {
             if (studentService.getStudentByRegNumber(regNumber).isEmpty()) {
                 forwardWithError(request, response,
                                  "Cannot record visit: the student registration number does not exist.",
-                                 visitIdRaw, regNumber, doctorIdRaw, symptoms, diagnosis);
+                                 visitIdRaw, regNumber, doctorIdRaw, symptoms);
                 return;
             }
         } catch (Exception e) {
             logger.log(Level.SEVERE, "VisitServlet student lookup error", e);
             forwardWithError(request, response,
                              "Unable to validate student registration right now. Please try again.",
-                             visitIdRaw, regNumber, doctorIdRaw, symptoms, diagnosis);
+                             visitIdRaw, regNumber, doctorIdRaw, symptoms);
             return;
         }
 
@@ -121,7 +120,7 @@ public class VisitServlet extends HttpServlet {
             }
         } catch (NumberFormatException e) {
             forwardWithError(request, response, "A valid doctor is required.", visitIdRaw, regNumber, doctorIdRaw,
-                             symptoms, diagnosis);
+                             symptoms);
             return;
         }
 
@@ -130,7 +129,7 @@ public class VisitServlet extends HttpServlet {
             if (doctor == null || doctor.getRole() != User.Role.Doctor) {
                 forwardWithError(request, response,
                                  "Selected doctor ID is invalid. Please choose an existing doctor.",
-                                 visitIdRaw, regNumber, doctorIdRaw, symptoms, diagnosis);
+                                 visitIdRaw, regNumber, doctorIdRaw, symptoms);
                 return;
             }
             if (currentUser != null
@@ -138,20 +137,20 @@ public class VisitServlet extends HttpServlet {
                 && doctorId != currentUser.getUserId()) {
                 forwardWithError(request, response,
                                  "You can only create or edit visits assigned to your own doctor account.",
-                                 visitIdRaw, regNumber, doctorIdRaw, symptoms, diagnosis);
+                                 visitIdRaw, regNumber, doctorIdRaw, symptoms);
                 return;
             }
         } catch (Exception e) {
             logger.log(Level.SEVERE, "VisitServlet doctor lookup error", e);
             forwardWithError(request, response,
                              "Unable to validate doctor information right now. Please try again.",
-                             visitIdRaw, regNumber, doctorIdRaw, symptoms, diagnosis);
+                             visitIdRaw, regNumber, doctorIdRaw, symptoms);
             return;
         }
 
-        if (symptoms == null || symptoms.isBlank() || diagnosis == null || diagnosis.isBlank()) {
-            forwardWithError(request, response, "Symptoms and diagnosis are required.", visitIdRaw, regNumber,
-                             doctorIdRaw, symptoms, diagnosis);
+        if (symptoms == null || symptoms.isBlank()) {
+            forwardWithError(request, response, "Symptoms are required.", visitIdRaw, regNumber,
+                             doctorIdRaw, symptoms);
             return;
         }
 
@@ -160,7 +159,7 @@ public class VisitServlet extends HttpServlet {
         visit.setDoctorId(doctorId);
         visit.setVisitDate(visitDate);
         visit.setSymptoms(symptoms);
-        visit.setDiagnosis(diagnosis);
+        visit.setDiagnosis(null);
 
         try {
             if (visitIdRaw == null || visitIdRaw.isBlank()) {
@@ -190,7 +189,7 @@ public class VisitServlet extends HttpServlet {
                                   encode("Medical visit updated successfully."));
         } catch (NumberFormatException e) {
             forwardWithError(request, response, "Invalid visit ID.", visitIdRaw, regNumber, doctorIdRaw,
-                             symptoms, diagnosis);
+                             symptoms);
         } catch (Exception e) {
             logger.log(Level.SEVERE, "VisitServlet POST save error", e);
             response.sendRedirect(request.getContextPath() + "/visits?error=" +
@@ -241,8 +240,7 @@ public class VisitServlet extends HttpServlet {
                                   String visitIdRaw,
                                   String regNumber,
                                   String doctorIdRaw,
-                                  String symptoms,
-                                  String diagnosis) throws ServletException, IOException {
+                                  String symptoms) throws ServletException, IOException {
         MedicalVisit visit = new MedicalVisit();
         if (visitIdRaw != null && !visitIdRaw.isBlank()) {
             try {
@@ -265,7 +263,7 @@ public class VisitServlet extends HttpServlet {
 
         visit.setRegNumber(regNumber);
         visit.setSymptoms(symptoms);
-        visit.setDiagnosis(diagnosis);
+        visit.setDiagnosis(null);
 
         request.setAttribute("error", errorMessage);
         request.setAttribute("visit", visit);

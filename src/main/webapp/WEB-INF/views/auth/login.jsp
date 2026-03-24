@@ -71,6 +71,13 @@
                     </div>
                 </div>
 
+                <div class="form-check mb-4">
+                    <input class="form-check-input" type="checkbox" id="rememberMe" name="rememberMe">
+                    <label class="form-check-label small text-muted" for="rememberMe">
+                        Keep me signed in on this device
+                    </label>
+                </div>
+
                 <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
                     <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
                 </button>

@@ -1,5 +1,6 @@
 package com.medicare.shared.filters;
 
+import com.medicare.features.auth.services.RememberMeService;
 import com.medicare.models.User;
 
 import javax.servlet.Filter;
@@ -9,6 +10,7 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.annotation.WebFilter;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -16,6 +18,8 @@ import java.io.IOException;
 
 @WebFilter("/*")
 public class AuthFilter implements Filter {
+
+    private final RememberMeService rememberMeService = new RememberMeService();
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException { }
@@ -44,6 +48,15 @@ public class AuthFilter implements Filter {
         User currentUser = session != null ? (User) session.getAttribute("currentUser") : null;
 
         if (currentUser == null) {
+            currentUser = tryAutoLoginFromCookie(request);
+            if (currentUser != null) {
+                HttpSession newSession = request.getSession(true);
+                newSession.setAttribute("currentUser", currentUser);
+                newSession.setMaxInactiveInterval(60 * 60);
+            }
+        }
+
+        if (currentUser == null) {
             response.sendRedirect(contextPath + "/login");
             return;
         }
@@ -64,6 +77,24 @@ public class AuthFilter implements Filter {
                path.startsWith("/assets/") ||
                path.equals("/favicon.ico") ||
                path.startsWith("/WEB-INF/");
+    }
+
+    private User tryAutoLoginFromCookie(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies == null) {
+            return null;
+        }
+
+        for (Cookie cookie : cookies) {
+            if (RememberMeService.COOKIE_NAME.equals(cookie.getName())) {
+                try {
+                    return rememberMeService.resolveUserFromToken(cookie.getValue()).orElse(null);
+                } catch (Exception ignored) {
+                    return null;
+                }
+            }
+        }
+        return null;
     }
 
     private boolean isAuthorizedForPath(String path, User currentUser) {

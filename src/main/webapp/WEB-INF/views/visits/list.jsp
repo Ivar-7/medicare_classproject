@@ -42,7 +42,6 @@
                                         <th class="py-3">Doctor</th>
                                         <th class="py-3">Date</th>
                                         <th class="py-3">Symptoms</th>
-                                        <th class="py-3">Diagnosis</th>
                                         <th class="py-3 text-end px-4">Actions</th>
                                     </tr>
                                 </thead>
@@ -59,10 +58,6 @@
                                             <td>
                                                 <span class="text-truncate d-inline-block" style="max-width:130px"
                                                       title="${v.symptoms}">${v.symptoms}</span>
-                                            </td>
-                                            <td>
-                                                <span class="text-truncate d-inline-block" style="max-width:130px"
-                                                      title="${v.diagnosis}">${v.diagnosis}</span>
                                             </td>
                                             <td class="text-end px-4">
                                                 <a href="${pageContext.request.contextPath}/visits/${v.visitId}"

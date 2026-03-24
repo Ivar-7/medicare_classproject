@@ -24,6 +24,7 @@ public class PrescriptionDAO {
             rs.getInt("prescription_id"),
             rs.getInt("visit_id"),
             rs.getString("medicine_name"),
+            rs.getString("disease"),
             rs.getString("dosage"),
             rs.getString("duration")
         );
@@ -67,26 +68,28 @@ public class PrescriptionDAO {
     }
 
     public void save(Prescription p) throws SQLException {
-        String sql = "INSERT INTO prescriptions (visit_id, medicine_name, dosage, duration) VALUES (?,?,?,?)";
+        String sql = "INSERT INTO prescriptions (visit_id, medicine_name, disease, dosage, duration) VALUES (?,?,?,?,?)";
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1,    p.getVisitId());
             ps.setString(2, p.getMedicineName());
-            ps.setString(3, p.getDosage());
-            ps.setString(4, p.getDuration());
+            ps.setString(3, p.getDisease());
+            ps.setString(4, p.getDosage());
+            ps.setString(5, p.getDuration());
             ps.executeUpdate();
         }
     }
 
     public void update(Prescription p) throws SQLException {
-        String sql = "UPDATE prescriptions SET visit_id=?, medicine_name=?, dosage=?, duration=? WHERE prescription_id=?";
+        String sql = "UPDATE prescriptions SET visit_id=?, medicine_name=?, disease=?, dosage=?, duration=? WHERE prescription_id=?";
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1,    p.getVisitId());
             ps.setString(2, p.getMedicineName());
-            ps.setString(3, p.getDosage());
-            ps.setString(4, p.getDuration());
-            ps.setInt(5,    p.getPrescriptionId());
+            ps.setString(3, p.getDisease());
+            ps.setString(4, p.getDosage());
+            ps.setString(5, p.getDuration());
+            ps.setInt(6,    p.getPrescriptionId());
             ps.executeUpdate();
         }
     }

@@ -62,7 +62,6 @@
                                             <th>Date</th>
                                             <th>Doctor</th>
                                             <th>Symptoms</th>
-                                            <th>Diagnosis</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -72,7 +71,6 @@
                                                 <td>${v.visitDate}</td>
                                                 <td>${v.doctorName}</td>
                                                 <td>${v.symptoms}</td>
-                                                <td>${v.diagnosis}</td>
                                             </tr>
                                         </c:forEach>
                                     </tbody>
@@ -146,10 +144,10 @@
                     </c:choose>
 
                     <c:if test="${includeDiseases}">
-                        <h6 class="fw-bold mt-4">Disease List (from diagnoses)</h6>
+                        <h6 class="fw-bold mt-4">Disease List (from prescriptions)</h6>
                         <c:choose>
                             <c:when test="${empty history.diseases}">
-                                <p class="text-muted small">No diseases/diagnoses recorded.</p>
+                                <p class="text-muted small">No diseases recorded in prescriptions.</p>
                             </c:when>
                             <c:otherwise>
                                 <ul class="mb-0">

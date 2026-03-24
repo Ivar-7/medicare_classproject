@@ -42,11 +42,16 @@ public class MedicalHistoryService {
         Set<String> diseases = new LinkedHashSet<>();
 
         for (MedicalVisit visit : visits) {
-            allPrescriptions.addAll(prescriptionService.getPrescriptionsByVisit(visit.getVisitId()));
+            List<Prescription> visitPrescriptions = prescriptionService.getPrescriptionsByVisit(visit.getVisitId());
+            allPrescriptions.addAll(visitPrescriptions);
             allLabNotes.addAll(noteService.getNotesByVisit(visit.getVisitId()));
 
-            if (includeDiseases && visit.getDiagnosis() != null && !visit.getDiagnosis().isBlank()) {
-                diseases.add(visit.getDiagnosis().trim());
+            if (includeDiseases) {
+                for (Prescription prescription : visitPrescriptions) {
+                    if (prescription.getDisease() != null && !prescription.getDisease().isBlank()) {
+                        diseases.add(prescription.getDisease().trim());
+                    }
+                }
             }
         }
 

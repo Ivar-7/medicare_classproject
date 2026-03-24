@@ -5,6 +5,7 @@ public class Prescription {
     private int    prescriptionId;
     private int    visitId;
     private String medicineName;
+    private String disease;
     private String dosage;
     private String duration;
 
@@ -14,10 +15,11 @@ public class Prescription {
     public Prescription() { }
 
     public Prescription(int prescriptionId, int visitId,
-                        String medicineName, String dosage, String duration) {
+                        String medicineName, String disease, String dosage, String duration) {
         this.prescriptionId = prescriptionId;
         this.visitId        = visitId;
         this.medicineName   = medicineName;
+        this.disease        = disease;
         this.dosage         = dosage;
         this.duration       = duration;
     }
@@ -27,6 +29,7 @@ public class Prescription {
     public int    getPrescriptionId() { return prescriptionId; }
     public int    getVisitId()        { return visitId;        }
     public String getMedicineName()   { return medicineName;   }
+    public String getDisease()        { return disease;        }
     public String getDosage()         { return dosage;         }
     public String getDuration()       { return duration;       }
     public String getStudentRegNumber() { return studentRegNumber; }
@@ -36,6 +39,7 @@ public class Prescription {
     public void setPrescriptionId(int prescriptionId)  { this.prescriptionId = prescriptionId; }
     public void setVisitId(int visitId)                { this.visitId        = visitId;        }
     public void setMedicineName(String medicineName)   { this.medicineName   = medicineName;   }
+    public void setDisease(String disease)             { this.disease        = disease;        }
     public void setDosage(String dosage)               { this.dosage         = dosage;         }
     public void setDuration(String duration)           { this.duration       = duration;       }
     public void setStudentRegNumber(String studentRegNumber) { this.studentRegNumber = studentRegNumber; }
