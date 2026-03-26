@@ -42,6 +42,7 @@
                                         <th class="py-3">Doctor</th>
                                         <th class="py-3">Date</th>
                                         <th class="py-3">Symptoms</th>
+                                        <th class="py-3">Status</th>
                                         <th class="py-3 text-end px-4">Actions</th>
                                     </tr>
                                 </thead>
@@ -56,8 +57,13 @@
                                             <td class="text-muted small">${v.doctorName}</td>
                                             <td class="text-muted small">${v.visitDate}</td>
                                             <td>
-                                                <span class="text-truncate d-inline-block" style="max-width:130px"
+                                                <span class="text-truncate d-inline-block truncate-130"
                                                       title="${v.symptoms}">${v.symptoms}</span>
+                                            </td>
+                                            <td>
+                                                <span class="badge ${v.completed ? 'bg-success-subtle text-success border border-success-subtle' : 'bg-warning-subtle text-warning border border-warning-subtle'}">
+                                                    ${v.completed ? 'Completed' : 'Pending'}
+                                                </span>
                                             </td>
                                             <td class="text-end px-4">
                                                 <a href="${pageContext.request.contextPath}/visits/${v.visitId}"

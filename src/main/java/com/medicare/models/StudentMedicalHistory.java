@@ -9,7 +9,6 @@ public class StudentMedicalHistory {
     private List<MedicalVisit> visits = new ArrayList<>();
     private List<Prescription> prescriptions = new ArrayList<>();
     private List<TreatmentNote> labHistory = new ArrayList<>();
-    private List<String> diseases = new ArrayList<>();
 
     public Student getStudent() {
         return student;
@@ -41,13 +40,5 @@ public class StudentMedicalHistory {
 
     public void setLabHistory(List<TreatmentNote> labHistory) {
         this.labHistory = labHistory;
-    }
-
-    public List<String> getDiseases() {
-        return diseases;
-    }
-
-    public void setDiseases(List<String> diseases) {
-        this.diseases = diseases;
     }
 }

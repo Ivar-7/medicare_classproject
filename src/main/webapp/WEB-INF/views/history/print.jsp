@@ -23,11 +23,8 @@
                                value="${regNumber}" placeholder="e.g. STU-001" required>
                     </div>
                     <div class="col-md-6 d-flex gap-2">
-                        <button type="submit" name="includeDiseases" value="true" class="btn btn-primary">
-                            <i class="bi bi-capsule me-1"></i>Load With Diseases
-                        </button>
-                        <button type="submit" name="includeDiseases" value="false" class="btn btn-outline-primary">
-                            <i class="bi bi-file-text me-1"></i>Load Without Diseases
+                        <button type="submit" class="btn btn-primary">
+                            Load History
                         </button>
                     </div>
                 </form>
@@ -44,7 +41,7 @@
                             <div class="text-muted small">Faculty: ${history.student.faculty}</div>
                         </div>
                         <button type="button" class="btn btn-outline-secondary" onclick="window.print()">
-                            <i class="bi bi-printer me-1"></i>Print Medical History
+                            Print Medical History
                         </button>
                     </div>
 
@@ -142,22 +139,6 @@
                             </div>
                         </c:otherwise>
                     </c:choose>
-
-                    <c:if test="${includeDiseases}">
-                        <h6 class="fw-bold mt-4">Disease List (from prescriptions)</h6>
-                        <c:choose>
-                            <c:when test="${empty history.diseases}">
-                                <p class="text-muted small">No diseases recorded in prescriptions.</p>
-                            </c:when>
-                            <c:otherwise>
-                                <ul class="mb-0">
-                                    <c:forEach var="d" items="${history.diseases}">
-                                        <li>${d}</li>
-                                    </c:forEach>
-                                </ul>
-                            </c:otherwise>
-                        </c:choose>
-                    </c:if>
                 </div>
             </div>
         </c:if>

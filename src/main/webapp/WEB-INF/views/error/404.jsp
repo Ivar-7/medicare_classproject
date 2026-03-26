@@ -10,7 +10,7 @@
 </head>
 <body class="bg-light d-flex align-items-center justify-content-center min-vh-100">
     <div class="text-center p-4">
-        <i class="bi bi-map text-muted" style="font-size:5rem;opacity:0.3"></i>
+        <i class="bi bi-map text-muted display-1 opacity-25"></i>
         <h1 class="fw-bold text-dark mt-3">404</h1>
         <h5 class="text-muted mb-4">Page Not Found</h5>
         <p class="text-muted mb-4">The page you are looking for doesn't exist or has been moved.</p>

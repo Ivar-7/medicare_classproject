@@ -2,6 +2,7 @@ package com.medicare.features.auth.servlets;
 
 import com.medicare.features.users.services.UserService;
 import com.medicare.models.User;
+import com.medicare.shared.utils.ServletRequestUtils;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -10,10 +11,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
-import java.util.Locale;
+import java.util.regex.Pattern;
 
 @WebServlet("/register")
 public class RegisterServlet extends HttpServlet {
+
+    private static final Pattern FULL_NAME_PATTERN = Pattern.compile("^[A-Za-z][A-Za-z\\s'.-]*$");
 
     private final UserService userService = new UserService();
 
@@ -38,10 +41,10 @@ public class RegisterServlet extends HttpServlet {
             return;
         }
 
-        String fullName = trim(request.getParameter("fullName"));
-        String username = trim(request.getParameter("username"));
-        String password = trim(request.getParameter("password"));
-        String roleRaw = trim(request.getParameter("role"));
+        String fullName = ServletRequestUtils.trim(request.getParameter("fullName"));
+        String username = ServletRequestUtils.trim(request.getParameter("username"));
+        String password = ServletRequestUtils.trim(request.getParameter("password"));
+        String roleRaw = ServletRequestUtils.trim(request.getParameter("role"));
 
         if (fullName == null || fullName.isBlank()) {
             request.setAttribute("error", "Full name is required.");
@@ -49,9 +52,19 @@ public class RegisterServlet extends HttpServlet {
             return;
         }
 
+        if (!FULL_NAME_PATTERN.matcher(fullName).matches()) {
+            request.setAttribute("error", "Full name cannot contain numbers.");
+            request.setAttribute("fullName", fullName);
+            request.setAttribute("username", username);
+            request.setAttribute("role", roleRaw);
+            request.getRequestDispatcher("/WEB-INF/views/auth/register.jsp").forward(request, response);
+            return;
+        }
+
         if (username == null || username.isBlank()) {
             request.setAttribute("error", "Username is required.");
             request.setAttribute("fullName", fullName);
+            request.setAttribute("role", roleRaw);
             request.getRequestDispatcher("/WEB-INF/views/auth/register.jsp").forward(request, response);
             return;
         }
@@ -60,6 +73,7 @@ public class RegisterServlet extends HttpServlet {
             request.setAttribute("error", "Password is required.");
             request.setAttribute("fullName", fullName);
             request.setAttribute("username", username);
+            request.setAttribute("role", roleRaw);
             request.getRequestDispatcher("/WEB-INF/views/auth/register.jsp").forward(request, response);
             return;
         }
@@ -68,6 +82,7 @@ public class RegisterServlet extends HttpServlet {
             request.setAttribute("error", "Role is required.");
             request.setAttribute("fullName", fullName);
             request.setAttribute("username", username);
+            request.setAttribute("role", roleRaw);
             request.getRequestDispatcher("/WEB-INF/views/auth/register.jsp").forward(request, response);
             return;
         }
@@ -79,6 +94,7 @@ public class RegisterServlet extends HttpServlet {
                 request.setAttribute("error", "Cannot register with Admin role.");
                 request.setAttribute("fullName", fullName);
                 request.setAttribute("username", username);
+                request.setAttribute("role", roleRaw);
                 request.getRequestDispatcher("/WEB-INF/views/auth/register.jsp").forward(request, response);
                 return;
             }
@@ -86,19 +102,19 @@ public class RegisterServlet extends HttpServlet {
             request.setAttribute("error", "Invalid role selected.");
             request.setAttribute("fullName", fullName);
             request.setAttribute("username", username);
+            request.setAttribute("role", roleRaw);
             request.getRequestDispatcher("/WEB-INF/views/auth/register.jsp").forward(request, response);
             return;
         }
 
         try {
-            boolean usernameTaken = userService.getAllUsers().stream()
-                    .anyMatch(u -> u.getUsername().toLowerCase(Locale.ROOT)
-                            .equals(username.toLowerCase(Locale.ROOT)));
+            boolean usernameTaken = userService.getUserByUsername(username).isPresent();
 
             if (usernameTaken) {
                 request.setAttribute("error", "Username is already in use.");
                 request.setAttribute("fullName", fullName);
                 request.setAttribute("username", username);
+                request.setAttribute("role", roleRaw);
                 request.getRequestDispatcher("/WEB-INF/views/auth/register.jsp").forward(request, response);
                 return;
             }
@@ -118,11 +134,8 @@ public class RegisterServlet extends HttpServlet {
             request.setAttribute("error", "A system error occurred during registration. Please try again.");
             request.setAttribute("fullName", fullName);
             request.setAttribute("username", username);
+            request.setAttribute("role", roleRaw);
             request.getRequestDispatcher("/WEB-INF/views/auth/register.jsp").forward(request, response);
         }
-    }
-
-    private String trim(String value) {
-        return value == null ? null : value.trim();
     }
 }

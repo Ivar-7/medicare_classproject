@@ -10,7 +10,7 @@
 </head>
 <body class="bg-light d-flex align-items-center justify-content-center min-vh-100">
     <div class="text-center p-4">
-        <i class="bi bi-exclamation-triangle text-warning" style="font-size:5rem;opacity:0.5"></i>
+        <i class="bi bi-exclamation-triangle text-warning display-1 opacity-50"></i>
         <h1 class="fw-bold text-dark mt-3">500</h1>
         <h5 class="text-muted mb-4">Internal Server Error</h5>
         <p class="text-muted mb-4">

@@ -12,10 +12,8 @@ import com.medicare.models.TreatmentNote;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 public class MedicalHistoryService {
 
@@ -39,25 +37,14 @@ public class MedicalHistoryService {
         List<Prescription> allPrescriptions = new ArrayList<>();
         List<TreatmentNote> allLabNotes = new ArrayList<>();
 
-        Set<String> diseases = new LinkedHashSet<>();
-
         for (MedicalVisit visit : visits) {
             List<Prescription> visitPrescriptions = prescriptionService.getPrescriptionsByVisit(visit.getVisitId());
             allPrescriptions.addAll(visitPrescriptions);
             allLabNotes.addAll(noteService.getNotesByVisit(visit.getVisitId()));
-
-            if (includeDiseases) {
-                for (Prescription prescription : visitPrescriptions) {
-                    if (prescription.getDisease() != null && !prescription.getDisease().isBlank()) {
-                        diseases.add(prescription.getDisease().trim());
-                    }
-                }
-            }
         }
 
         history.setPrescriptions(allPrescriptions);
         history.setLabHistory(allLabNotes);
-        history.setDiseases(new ArrayList<>(diseases));
 
         return Optional.of(history);
     }

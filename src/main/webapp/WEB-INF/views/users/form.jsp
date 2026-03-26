@@ -18,7 +18,6 @@
                 </ol>
             </nav>
             <h5 class="fw-bold mb-0">
-                <i class="bi bi-person-${empty user ? 'plus' : 'gear'} text-primary me-2"></i>
                 ${empty user ? 'Add New User' : 'Edit User Account'}
             </h5>
         </div>
@@ -34,7 +33,10 @@
                     <div class="col-md-6">
                         <label for="fullName" class="form-label">Full Name</label>
                         <input id="fullName" name="fullName" type="text" class="form-control"
-                               value="${user.fullName}" maxlength="120" required>
+                               value="${user.fullName}" maxlength="120"
+                               pattern="[A-Za-z][A-Za-z\s'.-]*"
+                               title="Use letters, spaces, apostrophes, dots, and hyphens only."
+                               oninput="this.value=this.value.replace(/[0-9]/g,'')" required>
                     </div>
 
                     <div class="col-md-6">
@@ -70,11 +72,10 @@
                     <div class="col-12 d-flex gap-2 pt-2">
                         <button type="submit" name="action" value="${empty user ? 'create' : 'update'}"
                                 class="btn btn-primary">
-                            <i class="bi bi-check2-circle me-1"></i>
                             ${empty user ? 'Create User' : 'Update User'}
                         </button>
                         <a href="${pageContext.request.contextPath}/users" class="btn btn-outline-secondary">
-                            <i class="bi bi-arrow-left me-1"></i>Back to Users
+                            Back to Users
                         </a>
                     </div>
                 </form>
@@ -85,7 +86,7 @@
                           onsubmit="return confirm('Delete this user account? This action cannot be undone.');">
                         <input type="hidden" name="userId" value="${user.userId}">
                         <button type="submit" name="action" value="delete" class="btn btn-outline-danger">
-                            <i class="bi bi-trash me-1"></i>Delete User
+                            Delete User
                         </button>
                     </form>
                 </c:if>

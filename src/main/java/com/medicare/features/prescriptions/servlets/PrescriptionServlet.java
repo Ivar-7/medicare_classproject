@@ -5,16 +5,14 @@ import com.medicare.features.visits.services.MedicalVisitService;
 import com.medicare.models.MedicalVisit;
 import com.medicare.models.Prescription;
 import com.medicare.models.User;
+import com.medicare.shared.utils.ServletRequestUtils;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import java.io.IOException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -29,14 +27,20 @@ public class PrescriptionServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         String pathInfo = request.getPathInfo();
-        exposeAlertsFromQuery(request);
+        ServletRequestUtils.exposeAlertsFromQuery(request);
         try {
             if (pathInfo == null || pathInfo.equals("/")) {
-                request.setAttribute("prescriptions", prescriptionService.getAllPrescriptions());
+                User currentUser = ServletRequestUtils.getCurrentUser(request);
+                if (currentUser != null && currentUser.getRole() == User.Role.Doctor) {
+                    request.setAttribute("prescriptions",
+                                         prescriptionService.getPrescriptionsByDoctor(currentUser.getUserId()));
+                } else {
+                    request.setAttribute("prescriptions", prescriptionService.getAllPrescriptions());
+                }
                 request.getRequestDispatcher("/WEB-INF/views/prescriptions/list.jsp").forward(request, response);
             } else if (pathInfo.equals("/new")) {
                 Prescription prescription = new Prescription();
-                String visitIdRaw = trim(request.getParameter("visitId"));
+                String visitIdRaw = ServletRequestUtils.trim(request.getParameter("visitId"));
                 if (visitIdRaw != null && visitIdRaw.matches("\\d+")) {
                     int visitId = Integer.parseInt(visitIdRaw);
                     prescription.setVisitId(visitId);
@@ -49,21 +53,21 @@ public class PrescriptionServlet extends HttpServlet {
                 request.getRequestDispatcher("/WEB-INF/views/prescriptions/form.jsp").forward(request, response);
             } else if (pathInfo.startsWith("/delete/")) {
                 int id = Integer.parseInt(pathInfo.substring(8));
-                User currentUser = getCurrentUser(request);
+                User currentUser = ServletRequestUtils.getCurrentUser(request);
                 Prescription existing = prescriptionService.getPrescriptionById(id).orElse(null);
                 if (existing == null) {
-                    response.sendRedirect(request.getContextPath() + "/prescriptions?error=" +
-                                          encode("Prescription was not found."));
+                    ServletRequestUtils.redirectWithMessage(request, response, "/prescriptions", "error",
+                                                           "Prescription was not found.");
                     return;
                 }
                 if (!canManagePrescription(currentUser, existing.getVisitId())) {
-                    response.sendRedirect(request.getContextPath() + "/prescriptions?error=" +
-                                          encode("You cannot delete prescriptions for other doctors' visits."));
+                    ServletRequestUtils.redirectWithMessage(request, response, "/prescriptions", "error",
+                                                           "You cannot delete prescriptions for other doctors' visits.");
                     return;
                 }
                 prescriptionService.deletePrescription(id);
-                response.sendRedirect(request.getContextPath() + "/prescriptions?success=" +
-                                      encode("Prescription deleted successfully."));
+                ServletRequestUtils.redirectWithMessage(request, response, "/prescriptions", "success",
+                                                       "Prescription deleted successfully.");
                 return;
             } else {
                 int id = Integer.parseInt(pathInfo.substring(1));
@@ -72,7 +76,7 @@ public class PrescriptionServlet extends HttpServlet {
                     response.sendError(HttpServletResponse.SC_NOT_FOUND);
                     return;
                 }
-                User currentUser = getCurrentUser(request);
+                User currentUser = ServletRequestUtils.getCurrentUser(request);
                 if (!canManagePrescription(currentUser, prescription.getVisitId())) {
                     response.sendError(HttpServletResponse.SC_FORBIDDEN);
                     return;
@@ -91,42 +95,48 @@ public class PrescriptionServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        String visitIdRaw = trim(request.getParameter("visitId"));
-        String prescriptionIdRaw = trim(request.getParameter("prescriptionId"));
-        String studentRegNumber = trim(request.getParameter("studentRegNumber"));
-        String medicineName = trim(request.getParameter("medicineName"));
-        String disease = trim(request.getParameter("disease"));
-        String dosage = trim(request.getParameter("dosage"));
-        String duration = trim(request.getParameter("duration"));
+        String visitIdRaw = ServletRequestUtils.trim(request.getParameter("visitId"));
+        String prescriptionIdRaw = ServletRequestUtils.trim(request.getParameter("prescriptionId"));
+        String studentRegNumber = ServletRequestUtils.trim(request.getParameter("studentRegNumber"));
+        String medicineName = ServletRequestUtils.trim(request.getParameter("medicineName"));
+        String diagnosis = ServletRequestUtils.trim(request.getParameter("diagnosis"));
+        String dosage = ServletRequestUtils.trim(request.getParameter("dosage"));
+        String duration = ServletRequestUtils.trim(request.getParameter("duration"));
 
         if (visitIdRaw == null || !visitIdRaw.matches("\\d+")) {
             forwardWithError(request, response, "Visit ID must be a positive number.",
-                             prescriptionIdRaw, visitIdRaw, studentRegNumber, medicineName, disease, dosage, duration);
+                             prescriptionIdRaw, visitIdRaw, studentRegNumber, medicineName, diagnosis, dosage,
+                             duration);
             return;
         }
         if (studentRegNumber == null || studentRegNumber.isBlank()) {
             forwardWithError(request, response, "Student ID is required.",
-                             prescriptionIdRaw, visitIdRaw, studentRegNumber, medicineName, disease, dosage, duration);
+                             prescriptionIdRaw, visitIdRaw, studentRegNumber, medicineName, diagnosis, dosage,
+                             duration);
             return;
         }
         if (medicineName == null || medicineName.isBlank()) {
             forwardWithError(request, response, "Medicine name is required.",
-                             prescriptionIdRaw, visitIdRaw, studentRegNumber, medicineName, disease, dosage, duration);
+                             prescriptionIdRaw, visitIdRaw, studentRegNumber, medicineName, diagnosis, dosage,
+                             duration);
             return;
         }
-        if (disease == null || disease.isBlank()) {
-            forwardWithError(request, response, "Disease is required.",
-                             prescriptionIdRaw, visitIdRaw, studentRegNumber, medicineName, disease, dosage, duration);
+        if (diagnosis == null || diagnosis.isBlank()) {
+            forwardWithError(request, response, "Diagnosis is required.",
+                             prescriptionIdRaw, visitIdRaw, studentRegNumber, medicineName, diagnosis, dosage,
+                             duration);
             return;
         }
         if (dosage == null || dosage.isBlank()) {
             forwardWithError(request, response, "Dosage is required.",
-                             prescriptionIdRaw, visitIdRaw, studentRegNumber, medicineName, disease, dosage, duration);
+                             prescriptionIdRaw, visitIdRaw, studentRegNumber, medicineName, diagnosis, dosage,
+                             duration);
             return;
         }
         if (duration == null || duration.isBlank()) {
             forwardWithError(request, response, "Duration is required.",
-                             prescriptionIdRaw, visitIdRaw, studentRegNumber, medicineName, disease, dosage, duration);
+                             prescriptionIdRaw, visitIdRaw, studentRegNumber, medicineName, diagnosis, dosage,
+                             duration);
             return;
         }
 
@@ -135,20 +145,22 @@ public class PrescriptionServlet extends HttpServlet {
             MedicalVisit visit = visitService.getVisitById(visitId).orElse(null);
             if (visit == null) {
                 forwardWithError(request, response, "Visit ID does not exist.",
-                                 prescriptionIdRaw, visitIdRaw, studentRegNumber, medicineName, disease, dosage, duration);
+                                 prescriptionIdRaw, visitIdRaw, studentRegNumber, medicineName, diagnosis, dosage,
+                                 duration);
                 return;
             }
             if (!studentRegNumber.equals(visit.getRegNumber())) {
                 forwardWithError(request, response,
                                  "Student ID does not match the selected visit.",
-                                 prescriptionIdRaw, visitIdRaw, studentRegNumber, medicineName, disease, dosage, duration);
+                                 prescriptionIdRaw, visitIdRaw, studentRegNumber, medicineName, diagnosis, dosage,
+                                 duration);
                 return;
             }
 
-            User currentUser = getCurrentUser(request);
+            User currentUser = ServletRequestUtils.getCurrentUser(request);
             if (!canManagePrescription(currentUser, visitId)) {
-                response.sendRedirect(request.getContextPath() + "/prescriptions?error=" +
-                                      encode("You can only prescribe for your own visits."));
+                ServletRequestUtils.redirectWithMessage(request, response, "/prescriptions", "error",
+                                                       "You can only prescribe for your own visits.");
                 return;
             }
 
@@ -156,34 +168,36 @@ public class PrescriptionServlet extends HttpServlet {
                                  ? Integer.parseInt(prescriptionIdRaw)
                                  : 0;
 
-            Prescription prescription = new Prescription(prescriptionId, visitId, medicineName, disease, dosage, duration);
+            Prescription prescription = new Prescription(prescriptionId, visitId, medicineName, diagnosis, dosage,
+                                                         duration);
 
             if (prescriptionId > 0) {
                 Prescription existing = prescriptionService.getPrescriptionById(prescriptionId).orElse(null);
                 if (existing == null) {
-                    response.sendRedirect(request.getContextPath() + "/prescriptions?error=" +
-                                          encode("Prescription was not found."));
+                    ServletRequestUtils.redirectWithMessage(request, response, "/prescriptions", "error",
+                                                           "Prescription was not found.");
                     return;
                 }
                 if (!canManagePrescription(currentUser, existing.getVisitId())) {
-                    response.sendRedirect(request.getContextPath() + "/prescriptions?error=" +
-                                          encode("You cannot update prescriptions for other doctors' visits."));
+                    ServletRequestUtils.redirectWithMessage(request, response, "/prescriptions", "error",
+                                                           "You cannot update prescriptions for other doctors' visits.");
                     return;
                 }
                 prescriptionService.updatePrescription(prescription);
-                response.sendRedirect(request.getContextPath() + "/prescriptions?success=" +
-                                      encode("Prescription updated successfully."));
+                ServletRequestUtils.redirectWithMessage(request, response, "/prescriptions", "success",
+                                                       "Prescription updated successfully.");
                 return;
             }
 
             prescriptionService.createPrescription(prescription);
-            response.sendRedirect(request.getContextPath() + "/prescriptions?success=" +
-                                  encode("Prescription created successfully."));
+            ServletRequestUtils.redirectWithMessage(request, response, "/prescriptions", "success",
+                                                   "Prescription created successfully.");
         } catch (Exception e) {
             logger.log(Level.SEVERE, "PrescriptionServlet POST error", e);
             forwardWithError(request, response,
                              "A system error occurred while saving the prescription.",
-                             prescriptionIdRaw, visitIdRaw, studentRegNumber, medicineName, disease, dosage, duration);
+                             prescriptionIdRaw, visitIdRaw, studentRegNumber, medicineName, diagnosis, dosage,
+                             duration);
         }
     }
 
@@ -194,7 +208,7 @@ public class PrescriptionServlet extends HttpServlet {
                                   String visitIdRaw,
                                   String studentRegNumber,
                                   String medicineName,
-                                  String disease,
+                                  String diagnosis,
                                   String dosage,
                                   String duration) throws ServletException, IOException {
         Prescription prescription = new Prescription();
@@ -206,7 +220,7 @@ public class PrescriptionServlet extends HttpServlet {
         }
         prescription.setStudentRegNumber(studentRegNumber);
         prescription.setMedicineName(medicineName);
-        prescription.setDisease(disease);
+        prescription.setDiagnosis(diagnosis);
         prescription.setDosage(dosage);
         prescription.setDuration(duration);
 
@@ -224,38 +238,5 @@ public class PrescriptionServlet extends HttpServlet {
         }
         MedicalVisit visit = visitService.getVisitById(visitId).orElse(null);
         return visit != null && visit.getDoctorId() == currentUser.getUserId();
-    }
-
-    private void exposeAlertsFromQuery(HttpServletRequest request) {
-        String success = trim(request.getParameter("success"));
-        String error = trim(request.getParameter("error"));
-        String warning = trim(request.getParameter("warning"));
-
-        if (success != null && !success.isBlank()) {
-            request.setAttribute("success", success);
-        }
-        if (error != null && !error.isBlank()) {
-            request.setAttribute("error", error);
-        }
-        if (warning != null && !warning.isBlank()) {
-            request.setAttribute("warning", warning);
-        }
-    }
-
-    private User getCurrentUser(HttpServletRequest request) {
-        HttpSession session = request.getSession(false);
-        if (session == null) {
-            return null;
-        }
-        Object currentUser = session.getAttribute("currentUser");
-        return currentUser instanceof User ? (User) currentUser : null;
-    }
-
-    private String trim(String value) {
-        return value == null ? null : value.trim();
-    }
-
-    private String encode(String value) {
-        return URLEncoder.encode(value, StandardCharsets.UTF_8);
     }
 }

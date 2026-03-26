@@ -177,7 +177,7 @@
                                                     <td class="text-muted small">${v.doctorName}</td>
                                                     <td class="text-muted small">${v.visitDate}</td>
                                                     <td>
-                                                        <span class="text-truncate d-inline-block" style="max-width:160px"
+                                                                                                                <span class="text-truncate d-inline-block truncate-160"
                                                               title="${v.symptoms}">
                                                             ${v.symptoms}
                                                         </span>

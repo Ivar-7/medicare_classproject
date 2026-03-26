@@ -29,7 +29,7 @@
                                 <p class="text-muted small mb-2">Total Students</p>
                                 <h4 class="fw-bold mb-0">${studentCount}</h4>
                             </div>
-                            <div class="text-info" style="font-size: 32px;">
+                            <div class="text-info fs-2">
                                 <i class="bi bi-people-fill"></i>
                             </div>
                         </div>
@@ -44,7 +44,7 @@
                                 <p class="text-muted small mb-2">Lab Notes Created</p>
                                 <h4 class="fw-bold mb-0">${notesCount}</h4>
                             </div>
-                            <div class="text-success" style="font-size: 32px;">
+                            <div class="text-success fs-2">
                                 <i class="bi bi-clipboard-check-fill"></i>
                             </div>
                         </div>

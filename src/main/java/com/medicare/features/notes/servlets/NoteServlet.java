@@ -2,6 +2,7 @@ package com.medicare.features.notes.servlets;
 
 import com.medicare.features.notes.services.TreatmentNoteService;
 import com.medicare.models.TreatmentNote;
+import com.medicare.shared.utils.ServletRequestUtils;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -9,8 +10,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.logging.Level;
@@ -27,7 +26,7 @@ public class NoteServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         String pathInfo = request.getPathInfo();
-        exposeAlertsFromQuery(request);
+        ServletRequestUtils.exposeAlertsFromQuery(request);
         try {
             if (pathInfo == null || pathInfo.equals("/")) {
                 request.setAttribute("notes", noteService.getAllNotes());
@@ -55,7 +54,7 @@ public class NoteServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        String action = trim(request.getParameter("action"));
+        String action = ServletRequestUtils.trim(request.getParameter("action"));
         if ("delete".equalsIgnoreCase(action)) {
             deleteNote(request, response);
             return;
@@ -65,10 +64,10 @@ public class NoteServlet extends HttpServlet {
 
     private void saveNote(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        String noteIdRaw = trim(request.getParameter("noteId"));
-        String visitIdRaw = trim(request.getParameter("visitId"));
-        String clinicalNotes = trim(request.getParameter("clinicalNotes"));
-        String followUpDateRaw = trim(request.getParameter("followUpDate"));
+        String noteIdRaw = ServletRequestUtils.trim(request.getParameter("noteId"));
+        String visitIdRaw = ServletRequestUtils.trim(request.getParameter("visitId"));
+        String clinicalNotes = ServletRequestUtils.trim(request.getParameter("clinicalNotes"));
+        String followUpDateRaw = ServletRequestUtils.trim(request.getParameter("followUpDate"));
 
         int visitId;
         try {
@@ -107,47 +106,46 @@ public class NoteServlet extends HttpServlet {
         try {
             if (noteIdRaw == null || noteIdRaw.isBlank()) {
                 noteService.createNote(note);
-                response.sendRedirect(request.getContextPath() + "/notes?success=" +
-                                      encode("Treatment note created successfully."));
+                ServletRequestUtils.redirectWithMessage(request, response, "/notes", "success",
+                                                       "Treatment note created successfully.");
                 return;
             }
 
             int noteId = Integer.parseInt(noteIdRaw);
             note.setNoteId(noteId);
             noteService.updateNote(note);
-            response.sendRedirect(request.getContextPath() + "/notes?success=" +
-                                  encode("Treatment note updated successfully."));
+            ServletRequestUtils.redirectWithMessage(request, response, "/notes", "success",
+                                                   "Treatment note updated successfully.");
         } catch (NumberFormatException e) {
             forwardWithError(request, response, "Invalid note ID.",
                              noteIdRaw, visitIdRaw, clinicalNotes, followUpDateRaw);
         } catch (Exception e) {
             logger.log(Level.SEVERE, "NoteServlet POST save error", e);
-            response.sendRedirect(request.getContextPath() + "/notes?error=" +
-                                  encode("A system error occurred while saving the note."));
+            ServletRequestUtils.redirectWithMessage(request, response, "/notes", "error",
+                                                   "A system error occurred while saving the note.");
         }
     }
 
     private void deleteNote(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
-        String noteIdRaw = trim(request.getParameter("noteId"));
+        String noteIdRaw = ServletRequestUtils.trim(request.getParameter("noteId"));
         if (noteIdRaw == null || noteIdRaw.isBlank()) {
-            response.sendRedirect(request.getContextPath() + "/notes?error=" +
-                                  encode("Note ID is required to delete."));
+            ServletRequestUtils.redirectWithMessage(request, response, "/notes", "error",
+                                                   "Note ID is required to delete.");
             return;
         }
 
         try {
             int noteId = Integer.parseInt(noteIdRaw);
             noteService.deleteNote(noteId);
-            response.sendRedirect(request.getContextPath() + "/notes?success=" +
-                                  encode("Treatment note deleted successfully."));
+            ServletRequestUtils.redirectWithMessage(request, response, "/notes", "success",
+                                                   "Treatment note deleted successfully.");
         } catch (NumberFormatException e) {
-            response.sendRedirect(request.getContextPath() + "/notes?error=" +
-                                  encode("Invalid note ID."));
+            ServletRequestUtils.redirectWithMessage(request, response, "/notes", "error", "Invalid note ID.");
         } catch (Exception e) {
             logger.log(Level.SEVERE, "NoteServlet POST delete error", e);
-            response.sendRedirect(request.getContextPath() + "/notes?error=" +
-                                  encode("A system error occurred while deleting the note."));
+            ServletRequestUtils.redirectWithMessage(request, response, "/notes", "error",
+                                                   "A system error occurred while deleting the note.");
         }
     }
 
@@ -189,29 +187,5 @@ public class NoteServlet extends HttpServlet {
         request.setAttribute("error", errorMessage);
         request.setAttribute("note", note);
         request.getRequestDispatcher("/WEB-INF/views/notes/form.jsp").forward(request, response);
-    }
-
-    private void exposeAlertsFromQuery(HttpServletRequest request) {
-        String success = trim(request.getParameter("success"));
-        String error = trim(request.getParameter("error"));
-        String warning = trim(request.getParameter("warning"));
-
-        if (success != null && !success.isBlank()) {
-            request.setAttribute("success", success);
-        }
-        if (error != null && !error.isBlank()) {
-            request.setAttribute("error", error);
-        }
-        if (warning != null && !warning.isBlank()) {
-            request.setAttribute("warning", warning);
-        }
-    }
-
-    private String trim(String value) {
-        return value == null ? null : value.trim();
-    }
-
-    private String encode(String value) {
-        return URLEncoder.encode(value, StandardCharsets.UTF_8);
     }
 }

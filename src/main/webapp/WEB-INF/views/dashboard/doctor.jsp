@@ -29,7 +29,7 @@
                                 <p class="text-muted small mb-2">Pending Visits</p>
                                 <h4 class="fw-bold mb-0">${pendingVisitsCount}</h4>
                             </div>
-                            <div class="text-warning" style="font-size: 32px;">
+                            <div class="text-warning fs-2">
                                 <i class="bi bi-exclamation-circle-fill"></i>
                             </div>
                         </div>
@@ -44,7 +44,7 @@
                                 <p class="text-muted small mb-2">Total Visits Handled</p>
                                 <h4 class="fw-bold mb-0">${totalVisitsCount}</h4>
                             </div>
-                            <div class="text-success" style="font-size: 32px;">
+                            <div class="text-success fs-2">
                                 <i class="bi bi-clipboard-check-fill"></i>
                             </div>
                         </div>
@@ -115,7 +115,7 @@
                                                     <td>${visit.regNumber}</td>
                                                     <td class="text-muted small">${visit.visitDate}</td>
                                                     <td>
-                                                        <span class="text-truncate d-inline-block" style="max-width: 200px;"
+                                                          <span class="text-truncate d-inline-block truncate-200"
                                                               title="${visit.symptoms}">${visit.symptoms}</span>
                                                     </td>
                                                     <td class="text-end px-4">

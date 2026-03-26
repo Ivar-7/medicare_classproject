@@ -31,7 +31,8 @@ public class MedicalVisitDAO {
             rs.getInt("doctor_id"),
             visitDate,
             rs.getString("symptoms"),
-            rs.getString("diagnosis")
+            rs.getString("diagnosis"),
+            rs.getInt("is_completed") == 1
         );
         try { visit.setStudentName(rs.getString("student_name")); } catch (SQLException ignored) { }
         try { visit.setDoctorName(rs.getString("doctor_name"));   } catch (SQLException ignored) { }
@@ -98,6 +99,20 @@ public class MedicalVisitDAO {
         return visits;
     }
 
+    public List<MedicalVisit> findPendingByDoctor(int doctorId) throws SQLException {
+        String sql = SELECT_WITH_JOINS +
+                     "WHERE v.doctor_id = ? AND v.is_completed = 0 ORDER BY v.visit_date DESC";
+        List<MedicalVisit> visits = new ArrayList<>();
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, doctorId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) visits.add(mapRow(rs));
+            }
+        }
+        return visits;
+    }
+
     public List<MedicalVisit> findRecent(int limit) throws SQLException {
         String sql = SELECT_WITH_JOINS + "ORDER BY v.visit_date DESC LIMIT ?";
         List<MedicalVisit> visits = new ArrayList<>();
@@ -140,8 +155,19 @@ public class MedicalVisitDAO {
         }
     }
 
+    public int countPendingByDoctor(int doctorId) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM medical_visits WHERE doctor_id = ? AND is_completed = 0";
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, doctorId);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() ? rs.getInt(1) : 0;
+            }
+        }
+    }
+
     public int save(MedicalVisit visit) throws SQLException {
-        String sql = "INSERT INTO medical_visits (reg_number, doctor_id, visit_date, symptoms, diagnosis) VALUES (?,?,?,?,?)";
+        String sql = "INSERT INTO medical_visits (reg_number, doctor_id, visit_date, symptoms, diagnosis, is_completed) VALUES (?,?,?,?,?,?)";
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, visit.getRegNumber());
@@ -149,6 +175,7 @@ public class MedicalVisitDAO {
             ps.setString(3, visit.getVisitDate().toString());
             ps.setString(4, visit.getSymptoms());
             ps.setString(5, visit.getDiagnosis());
+            ps.setInt(6, visit.isCompleted() ? 1 : 0);
             ps.executeUpdate();
             try (ResultSet keys = ps.getGeneratedKeys()) {
                 return keys.next() ? keys.getInt(1) : -1;
@@ -157,7 +184,7 @@ public class MedicalVisitDAO {
     }
 
     public void update(MedicalVisit visit) throws SQLException {
-        String sql = "UPDATE medical_visits SET reg_number=?, doctor_id=?, visit_date=?, symptoms=?, diagnosis=? WHERE visit_id=?";
+        String sql = "UPDATE medical_visits SET reg_number=?, doctor_id=?, visit_date=?, symptoms=?, diagnosis=?, is_completed=? WHERE visit_id=?";
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, visit.getRegNumber());
@@ -165,7 +192,8 @@ public class MedicalVisitDAO {
             ps.setString(3, visit.getVisitDate().toString());
             ps.setString(4, visit.getSymptoms());
             ps.setString(5, visit.getDiagnosis());
-            ps.setInt(6,    visit.getVisitId());
+            ps.setInt(6, visit.isCompleted() ? 1 : 0);
+            ps.setInt(7,    visit.getVisitId());
             ps.executeUpdate();
         }
     }

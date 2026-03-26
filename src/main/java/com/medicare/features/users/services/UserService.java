@@ -20,6 +20,10 @@ public class UserService {
         return userDAO.findById(id);
     }
 
+    public Optional<User> getUserByUsername(String username) throws SQLException {
+        return userDAO.findByUsername(username);
+    }
+
     public Optional<User> authenticate(String username, String password) throws SQLException {
         Optional<User> user = userDAO.findByUsername(username);
         if (user.isPresent() && PasswordUtils.verify(password, user.get().getPassword())) {

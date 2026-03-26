@@ -18,7 +18,6 @@
                 </ol>
             </nav>
             <h5 class="fw-bold mb-0">
-                <i class="bi bi-clipboard2-plus text-primary me-2"></i>
                 ${empty visit ? 'Record New Visit' : 'Edit Medical Visit'}
             </h5>
         </div>
@@ -56,13 +55,21 @@
                                   required>${visit.symptoms}</textarea>
                     </div>
 
+                    <div class="col-md-6">
+                        <label for="completed" class="form-label">Visit Status</label>
+                        <select id="completed" name="completed" class="form-select" required>
+                            <option value="false" ${visit.completed ? '' : 'selected'}>Pending</option>
+                            <option value="true" ${visit.completed ? 'selected' : ''}>Completed</option>
+                        </select>
+                        <div class="form-text">Completed visits are removed from doctor pending visits on dashboard.</div>
+                    </div>
+
                     <div class="col-12 d-flex gap-2 pt-2">
                         <button type="submit" name="action" value="${empty visit ? 'create' : 'update'}" class="btn btn-primary">
-                            <i class="bi bi-check2-circle me-1"></i>
                             ${empty visit ? 'Save Visit' : 'Update Visit'}
                         </button>
                         <a href="${pageContext.request.contextPath}/visits" class="btn btn-outline-secondary">
-                            <i class="bi bi-arrow-left me-1"></i>Back to Visits
+                            Back to Visits
                         </a>
                     </div>
                 </form>
@@ -73,7 +80,7 @@
                           onsubmit="return confirm('Delete this medical visit? This action cannot be undone.');">
                         <input type="hidden" name="visitId" value="${visit.visitId}">
                         <button type="submit" name="action" value="delete" class="btn btn-outline-danger">
-                            <i class="bi bi-trash me-1"></i>Delete Visit
+                            Delete Visit
                         </button>
                     </form>
                 </c:if>

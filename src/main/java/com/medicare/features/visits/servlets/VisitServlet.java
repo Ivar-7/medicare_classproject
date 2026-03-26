@@ -5,16 +5,14 @@ import com.medicare.features.users.services.UserService;
 import com.medicare.features.visits.services.MedicalVisitService;
 import com.medicare.models.MedicalVisit;
 import com.medicare.models.User;
+import com.medicare.shared.utils.ServletRequestUtils;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import java.io.IOException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -32,8 +30,8 @@ public class VisitServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         String pathInfo = request.getPathInfo();
-        exposeAlertsFromQuery(request);
-        User currentUser = getCurrentUser(request);
+        ServletRequestUtils.exposeAlertsFromQuery(request);
+        User currentUser = ServletRequestUtils.getCurrentUser(request);
         try {
             if (pathInfo == null || pathInfo.equals("/")) {
                 if (currentUser != null && currentUser.getRole() == User.Role.Doctor) {
@@ -73,8 +71,8 @@ public class VisitServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        String action = request.getParameter("action");
-        User currentUser = getCurrentUser(request);
+        String action = ServletRequestUtils.trim(request.getParameter("action"));
+        User currentUser = ServletRequestUtils.getCurrentUser(request);
         if ("delete".equalsIgnoreCase(action)) {
             deleteVisit(request, response, currentUser);
             return;
@@ -84,10 +82,11 @@ public class VisitServlet extends HttpServlet {
 
     private void saveVisit(HttpServletRequest request, HttpServletResponse response, User currentUser)
             throws IOException, ServletException {
-        String visitIdRaw = trim(request.getParameter("visitId"));
-        String regNumber = trim(request.getParameter("regNumber"));
-        String doctorIdRaw = trim(request.getParameter("doctorId"));
-        String symptoms = trim(request.getParameter("symptoms"));
+        String visitIdRaw = ServletRequestUtils.trim(request.getParameter("visitId"));
+        String regNumber = ServletRequestUtils.trim(request.getParameter("regNumber"));
+        String doctorIdRaw = ServletRequestUtils.trim(request.getParameter("doctorId"));
+        String symptoms = ServletRequestUtils.trim(request.getParameter("symptoms"));
+        boolean completed = "true".equalsIgnoreCase(ServletRequestUtils.trim(request.getParameter("completed")));
 
         int doctorId = 0;
         LocalDateTime visitDate = LocalDateTime.now();
@@ -160,49 +159,50 @@ public class VisitServlet extends HttpServlet {
         visit.setVisitDate(visitDate);
         visit.setSymptoms(symptoms);
         visit.setDiagnosis(null);
+        visit.setCompleted(completed);
 
         try {
             if (visitIdRaw == null || visitIdRaw.isBlank()) {
                 visitService.createVisit(visit);
-                response.sendRedirect(request.getContextPath() + "/visits?success=" +
-                                      encode("Medical visit recorded successfully."));
+                ServletRequestUtils.redirectWithMessage(request, response, "/visits", "success",
+                                                       "Medical visit recorded successfully.");
                 return;
             }
 
             int visitId = Integer.parseInt(visitIdRaw);
             MedicalVisit existingVisit = visitService.getVisitById(visitId).orElse(null);
             if (existingVisit == null) {
-                response.sendRedirect(request.getContextPath() + "/visits?error=" +
-                                      encode("Visit record was not found."));
+                ServletRequestUtils.redirectWithMessage(request, response, "/visits", "error",
+                                                       "Visit record was not found.");
                 return;
             }
             if (currentUser != null
                 && currentUser.getRole() == User.Role.Doctor
                 && existingVisit.getDoctorId() != currentUser.getUserId()) {
-                response.sendRedirect(request.getContextPath() + "/visits?error=" +
-                                      encode("You cannot edit another doctor's visit."));
+                ServletRequestUtils.redirectWithMessage(request, response, "/visits", "error",
+                                                       "You cannot edit another doctor's visit.");
                 return;
             }
             visit.setVisitId(visitId);
             visitService.updateVisit(visit);
-            response.sendRedirect(request.getContextPath() + "/visits?success=" +
-                                  encode("Medical visit updated successfully."));
+            ServletRequestUtils.redirectWithMessage(request, response, "/visits", "success",
+                                                   "Medical visit updated successfully.");
         } catch (NumberFormatException e) {
             forwardWithError(request, response, "Invalid visit ID.", visitIdRaw, regNumber, doctorIdRaw,
                              symptoms);
         } catch (Exception e) {
             logger.log(Level.SEVERE, "VisitServlet POST save error", e);
-            response.sendRedirect(request.getContextPath() + "/visits?error=" +
-                                  encode("A system error occurred while saving the visit."));
+            ServletRequestUtils.redirectWithMessage(request, response, "/visits", "error",
+                                                   "A system error occurred while saving the visit.");
         }
     }
 
     private void deleteVisit(HttpServletRequest request, HttpServletResponse response, User currentUser)
             throws IOException {
-        String visitIdRaw = trim(request.getParameter("visitId"));
+        String visitIdRaw = ServletRequestUtils.trim(request.getParameter("visitId"));
         if (visitIdRaw == null || visitIdRaw.isBlank()) {
-            response.sendRedirect(request.getContextPath() + "/visits?error=" +
-                                  encode("Visit ID is required to delete."));
+            ServletRequestUtils.redirectWithMessage(request, response, "/visits", "error",
+                                                   "Visit ID is required to delete.");
             return;
         }
 
@@ -210,27 +210,26 @@ public class VisitServlet extends HttpServlet {
             int visitId = Integer.parseInt(visitIdRaw);
             MedicalVisit existingVisit = visitService.getVisitById(visitId).orElse(null);
             if (existingVisit == null) {
-                response.sendRedirect(request.getContextPath() + "/visits?error=" +
-                                      encode("Visit record was not found."));
+                ServletRequestUtils.redirectWithMessage(request, response, "/visits", "error",
+                                                       "Visit record was not found.");
                 return;
             }
             if (currentUser != null
                 && currentUser.getRole() == User.Role.Doctor
                 && existingVisit.getDoctorId() != currentUser.getUserId()) {
-                response.sendRedirect(request.getContextPath() + "/visits?error=" +
-                                      encode("You cannot delete another doctor's visit."));
+                ServletRequestUtils.redirectWithMessage(request, response, "/visits", "error",
+                                                       "You cannot delete another doctor's visit.");
                 return;
             }
             visitService.deleteVisit(visitId);
-            response.sendRedirect(request.getContextPath() + "/visits?success=" +
-                                  encode("Medical visit deleted successfully."));
+            ServletRequestUtils.redirectWithMessage(request, response, "/visits", "success",
+                                                   "Medical visit deleted successfully.");
         } catch (NumberFormatException e) {
-            response.sendRedirect(request.getContextPath() + "/visits?error=" +
-                                  encode("Invalid visit ID."));
+            ServletRequestUtils.redirectWithMessage(request, response, "/visits", "error", "Invalid visit ID.");
         } catch (Exception e) {
             logger.log(Level.SEVERE, "VisitServlet POST delete error", e);
-            response.sendRedirect(request.getContextPath() + "/visits?error=" +
-                                  encode("A system error occurred while deleting the visit."));
+            ServletRequestUtils.redirectWithMessage(request, response, "/visits", "error",
+                                                   "A system error occurred while deleting the visit.");
         }
     }
 
@@ -242,6 +241,7 @@ public class VisitServlet extends HttpServlet {
                                   String doctorIdRaw,
                                   String symptoms) throws ServletException, IOException {
         MedicalVisit visit = new MedicalVisit();
+        boolean completed = "true".equalsIgnoreCase(ServletRequestUtils.trim(request.getParameter("completed")));
         if (visitIdRaw != null && !visitIdRaw.isBlank()) {
             try {
                 visit.setVisitId(Integer.parseInt(visitIdRaw));
@@ -264,6 +264,7 @@ public class VisitServlet extends HttpServlet {
         visit.setRegNumber(regNumber);
         visit.setSymptoms(symptoms);
         visit.setDiagnosis(null);
+        visit.setCompleted(completed);
 
         request.setAttribute("error", errorMessage);
         request.setAttribute("visit", visit);
@@ -279,38 +280,5 @@ public class VisitServlet extends HttpServlet {
     private void loadFormLookups(HttpServletRequest request) throws Exception {
         request.setAttribute("students", studentService.getAllStudents());
         request.setAttribute("doctors", userService.getDoctors());
-    }
-
-    private void exposeAlertsFromQuery(HttpServletRequest request) {
-        String success = trim(request.getParameter("success"));
-        String error = trim(request.getParameter("error"));
-        String warning = trim(request.getParameter("warning"));
-
-        if (success != null && !success.isBlank()) {
-            request.setAttribute("success", success);
-        }
-        if (error != null && !error.isBlank()) {
-            request.setAttribute("error", error);
-        }
-        if (warning != null && !warning.isBlank()) {
-            request.setAttribute("warning", warning);
-        }
-    }
-
-    private String trim(String value) {
-        return value == null ? null : value.trim();
-    }
-
-    private String encode(String value) {
-        return URLEncoder.encode(value, StandardCharsets.UTF_8);
-    }
-
-    private User getCurrentUser(HttpServletRequest request) {
-        HttpSession session = request.getSession(false);
-        if (session == null) {
-            return null;
-        }
-        Object currentUser = session.getAttribute("currentUser");
-        return currentUser instanceof User ? (User) currentUser : null;
     }
 }

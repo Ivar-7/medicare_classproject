@@ -1,6 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<c:set var="pageTitle" value="${empty student ? 'Add Student' : 'Edit Student'}" scope="request" />
+<c:set var="isEdit" value="${not empty originalRegNumber}" />
+<c:set var="pageTitle" value="${isEdit ? 'Edit Student' : 'Add Student'}" scope="request" />
 
 <jsp:include page="/components/header.jsp" />
 <jsp:include page="/components/navbar.jsp" />
@@ -14,12 +15,11 @@
                     <li class="breadcrumb-item">
                         <a href="${pageContext.request.contextPath}/students" class="text-decoration-none">Students</a>
                     </li>
-                    <li class="breadcrumb-item active">${empty student ? 'Add Student' : 'Edit Student'}</li>
+                    <li class="breadcrumb-item active">${isEdit ? 'Edit Student' : 'Add Student'}</li>
                 </ol>
             </nav>
             <h5 class="fw-bold mb-0">
-                <i class="bi bi-person-${empty student ? 'plus' : 'pencil'} text-primary me-2"></i>
-                ${empty student ? 'Register New Student' : 'Edit Student Profile'}
+                ${isEdit ? 'Edit Student Profile' : 'Register New Student'}
             </h5>
         </div>
 
@@ -30,15 +30,15 @@
                 <form method="post" action="${pageContext.request.contextPath}/students" class="row g-3">
 
                     <input type="hidden" name="originalRegNumber"
-                           value="${not empty originalRegNumber ? originalRegNumber : student.regNumber}">
+                           value="${originalRegNumber}">
 
                     <div class="col-md-6">
                         <label for="regNumber" class="form-label">Registration Number</label>
                         <input id="regNumber" name="regNumber" type="text" class="form-control"
-                               value="${student.regNumber}" maxlength="40" ${not empty student ? 'readonly' : ''} required>
+                               value="${student.regNumber}" maxlength="40" ${isEdit ? 'readonly' : ''} required>
                         <div class="form-text">
                             <c:choose>
-                                <c:when test="${empty student}">Unique student registration number.</c:when>
+                                <c:when test="${not isEdit}">Unique student registration number.</c:when>
                                 <c:otherwise>Registration number is immutable after creation.</c:otherwise>
                             </c:choose>
                         </div>
@@ -47,7 +47,10 @@
                     <div class="col-md-6">
                         <label for="fullName" class="form-label">Full Name</label>
                         <input id="fullName" name="fullName" type="text" class="form-control"
-                               value="${student.fullName}" maxlength="120" required>
+                               value="${student.fullName}" maxlength="120"
+                               pattern="[A-Za-z][A-Za-z\s'.-]*"
+                               title="Use letters, spaces, apostrophes, dots, and hyphens only."
+                               oninput="this.value=this.value.replace(/[0-9]/g,'')" required>
                     </div>
 
                     <div class="col-md-4">
@@ -79,24 +82,23 @@
                     </div>
 
                     <div class="col-12 d-flex gap-2 pt-2">
-                        <button type="submit" name="action" value="${empty student ? 'create' : 'update'}"
+                        <button type="submit" name="action" value="${isEdit ? 'update' : 'create'}"
                                 class="btn btn-primary">
-                            <i class="bi bi-check2-circle me-1"></i>
-                            ${empty student ? 'Register Student' : 'Update Student'}
+                            ${isEdit ? 'Update Student' : 'Register Student'}
                         </button>
                         <a href="${pageContext.request.contextPath}/students" class="btn btn-outline-secondary">
-                            <i class="bi bi-arrow-left me-1"></i>Back to Students
+                            Back to Students
                         </a>
                     </div>
                 </form>
 
-                <c:if test="${not empty student and not empty student.regNumber}">
+                <c:if test="${isEdit and not empty student and not empty student.regNumber}">
                     <hr class="my-4">
                     <form method="post" action="${pageContext.request.contextPath}/students"
                           onsubmit="return confirm('Delete this student record? This action cannot be undone.');">
                         <input type="hidden" name="regNumber" value="${student.regNumber}">
                         <button type="submit" name="action" value="delete" class="btn btn-outline-danger">
-                            <i class="bi bi-trash me-1"></i>Delete Student
+                            Delete Student
                         </button>
                     </form>
                 </c:if>
@@ -105,5 +107,20 @@
 
     </div>
 </main>
+
+<script>
+    (function() {
+        const dobInput = document.getElementById('dob');
+        if (!dobInput) {
+            return;
+        }
+
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        dobInput.max = `${yyyy}-${mm}-${dd}`;
+    })();
+</script>
 
 <jsp:include page="/components/footer.jsp" />

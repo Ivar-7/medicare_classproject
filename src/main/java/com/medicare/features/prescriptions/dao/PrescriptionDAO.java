@@ -24,7 +24,7 @@ public class PrescriptionDAO {
             rs.getInt("prescription_id"),
             rs.getInt("visit_id"),
             rs.getString("medicine_name"),
-            rs.getString("disease"),
+            rs.getString("diagnosis"),
             rs.getString("dosage"),
             rs.getString("duration")
         );
@@ -67,13 +67,27 @@ public class PrescriptionDAO {
         return list;
     }
 
+    public List<Prescription> findByDoctor(int doctorId) throws SQLException {
+        String sql = SELECT_WITH_VISIT +
+            "WHERE v.doctor_id = ? ORDER BY p.prescription_id DESC";
+        List<Prescription> list = new ArrayList<>();
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, doctorId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) list.add(mapRow(rs));
+            }
+        }
+        return list;
+    }
+
     public void save(Prescription p) throws SQLException {
-        String sql = "INSERT INTO prescriptions (visit_id, medicine_name, disease, dosage, duration) VALUES (?,?,?,?,?)";
+        String sql = "INSERT INTO prescriptions (visit_id, medicine_name, diagnosis, dosage, duration) VALUES (?,?,?,?,?)";
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1,    p.getVisitId());
             ps.setString(2, p.getMedicineName());
-            ps.setString(3, p.getDisease());
+            ps.setString(3, p.getDiagnosis());
             ps.setString(4, p.getDosage());
             ps.setString(5, p.getDuration());
             ps.executeUpdate();
@@ -81,12 +95,12 @@ public class PrescriptionDAO {
     }
 
     public void update(Prescription p) throws SQLException {
-        String sql = "UPDATE prescriptions SET visit_id=?, medicine_name=?, disease=?, dosage=?, duration=? WHERE prescription_id=?";
+        String sql = "UPDATE prescriptions SET visit_id=?, medicine_name=?, diagnosis=?, dosage=?, duration=? WHERE prescription_id=?";
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1,    p.getVisitId());
             ps.setString(2, p.getMedicineName());
-            ps.setString(3, p.getDisease());
+            ps.setString(3, p.getDiagnosis());
             ps.setString(4, p.getDosage());
             ps.setString(5, p.getDuration());
             ps.setInt(6,    p.getPrescriptionId());

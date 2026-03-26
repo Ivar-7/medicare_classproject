@@ -2,6 +2,7 @@ package com.medicare.features.students.servlets;
 
 import com.medicare.features.students.services.StudentService;
 import com.medicare.models.Student;
+import com.medicare.shared.utils.ServletRequestUtils;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -9,10 +10,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
+import java.util.regex.Pattern;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -20,6 +20,7 @@ import java.util.logging.Logger;
 public class StudentServlet extends HttpServlet {
 
     private static final Logger logger = Logger.getLogger(StudentServlet.class.getName());
+    private static final Pattern FULL_NAME_PATTERN = Pattern.compile("^[A-Za-z][A-Za-z\\s'.-]*$");
 
     private final StudentService studentService = new StudentService();
 
@@ -27,10 +28,10 @@ public class StudentServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         String pathInfo = request.getPathInfo();
-        exposeAlertsFromQuery(request);
+        ServletRequestUtils.exposeAlertsFromQuery(request);
         try {
             if (pathInfo == null || pathInfo.equals("/")) {
-                String query = trim(request.getParameter("q"));
+                String query = ServletRequestUtils.trim(request.getParameter("q"));
                 if (query != null && !query.isBlank()) {
                     request.setAttribute("students", studentService.searchStudents(query));
                     request.setAttribute("query", query);
@@ -48,6 +49,7 @@ public class StudentServlet extends HttpServlet {
                     return;
                 }
                 request.setAttribute("student", student);
+                request.setAttribute("originalRegNumber", student.getRegNumber());
                 request.getRequestDispatcher("/WEB-INF/views/students/form.jsp").forward(request, response);
             }
         } catch (Exception e) {
@@ -59,7 +61,7 @@ public class StudentServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        String action = trim(request.getParameter("action"));
+        String action = ServletRequestUtils.trim(request.getParameter("action"));
         if ("delete".equalsIgnoreCase(action)) {
             deleteStudent(request, response);
             return;
@@ -69,13 +71,13 @@ public class StudentServlet extends HttpServlet {
 
     private void saveStudent(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        String originalRegNumber = trim(request.getParameter("originalRegNumber"));
-        String regNumber = trim(request.getParameter("regNumber"));
-        String fullName = trim(request.getParameter("fullName"));
-        String dobRaw = trim(request.getParameter("dob"));
-        String gender = trim(request.getParameter("gender"));
-        String faculty = trim(request.getParameter("faculty"));
-        String contact = trim(request.getParameter("contact"));
+        String originalRegNumber = ServletRequestUtils.trim(request.getParameter("originalRegNumber"));
+        String regNumber = ServletRequestUtils.trim(request.getParameter("regNumber"));
+        String fullName = ServletRequestUtils.trim(request.getParameter("fullName"));
+        String dobRaw = ServletRequestUtils.trim(request.getParameter("dob"));
+        String gender = ServletRequestUtils.trim(request.getParameter("gender"));
+        String faculty = ServletRequestUtils.trim(request.getParameter("faculty"));
+        String contact = ServletRequestUtils.trim(request.getParameter("contact"));
 
         boolean isCreate = originalRegNumber == null || originalRegNumber.isBlank();
 
@@ -87,6 +89,12 @@ public class StudentServlet extends HttpServlet {
 
         if (fullName == null || fullName.isBlank()) {
             forwardWithError(request, response, "Full name is required.",
+                             originalRegNumber, regNumber, fullName, dobRaw, gender, faculty, contact);
+            return;
+        }
+
+        if (!FULL_NAME_PATTERN.matcher(fullName).matches()) {
+            forwardWithError(request, response, "Full name cannot contain numbers.",
                              originalRegNumber, regNumber, fullName, dobRaw, gender, faculty, contact);
             return;
         }
@@ -118,6 +126,12 @@ public class StudentServlet extends HttpServlet {
             return;
         }
 
+        if (dob.isAfter(LocalDate.now())) {
+            forwardWithError(request, response, "Date of birth cannot be in the future.",
+                             originalRegNumber, regNumber, fullName, dobRaw, gender, faculty, contact);
+            return;
+        }
+
         Student student = new Student();
         student.setRegNumber(regNumber);
         student.setFullName(fullName);
@@ -134,8 +148,8 @@ public class StudentServlet extends HttpServlet {
                     return;
                 }
                 studentService.createStudent(student);
-                response.sendRedirect(request.getContextPath() + "/students?success=" +
-                                      encode("Student registered successfully."));
+                ServletRequestUtils.redirectWithMessage(request, response, "/students", "success",
+                                                       "Student registered successfully.");
                 return;
             }
 
@@ -146,32 +160,32 @@ public class StudentServlet extends HttpServlet {
             }
 
             studentService.updateStudent(student);
-            response.sendRedirect(request.getContextPath() + "/students?success=" +
-                                  encode("Student updated successfully."));
+            ServletRequestUtils.redirectWithMessage(request, response, "/students", "success",
+                                                   "Student updated successfully.");
         } catch (Exception e) {
             logger.log(Level.SEVERE, "StudentServlet POST save error", e);
-            response.sendRedirect(request.getContextPath() + "/students?error=" +
-                                  encode("A system error occurred while saving the student."));
+            ServletRequestUtils.redirectWithMessage(request, response, "/students", "error",
+                                                   "A system error occurred while saving the student.");
         }
     }
 
     private void deleteStudent(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
-        String regNumber = trim(request.getParameter("regNumber"));
+        String regNumber = ServletRequestUtils.trim(request.getParameter("regNumber"));
         if (regNumber == null || regNumber.isBlank()) {
-            response.sendRedirect(request.getContextPath() + "/students?error=" +
-                                  encode("Registration number is required to delete."));
+            ServletRequestUtils.redirectWithMessage(request, response, "/students", "error",
+                                                   "Registration number is required to delete.");
             return;
         }
 
         try {
             studentService.deleteStudent(regNumber);
-            response.sendRedirect(request.getContextPath() + "/students?success=" +
-                                  encode("Student deleted successfully."));
+            ServletRequestUtils.redirectWithMessage(request, response, "/students", "success",
+                                                   "Student deleted successfully.");
         } catch (Exception e) {
             logger.log(Level.SEVERE, "StudentServlet POST delete error", e);
-            response.sendRedirect(request.getContextPath() + "/students?error=" +
-                                  encode("A system error occurred while deleting the student."));
+            ServletRequestUtils.redirectWithMessage(request, response, "/students", "error",
+                                                   "A system error occurred while deleting the student.");
         }
     }
 
@@ -204,29 +218,5 @@ public class StudentServlet extends HttpServlet {
         request.setAttribute("student", student);
         request.setAttribute("originalRegNumber", originalRegNumber);
         request.getRequestDispatcher("/WEB-INF/views/students/form.jsp").forward(request, response);
-    }
-
-    private void exposeAlertsFromQuery(HttpServletRequest request) {
-        String success = trim(request.getParameter("success"));
-        String error = trim(request.getParameter("error"));
-        String warning = trim(request.getParameter("warning"));
-
-        if (success != null && !success.isBlank()) {
-            request.setAttribute("success", success);
-        }
-        if (error != null && !error.isBlank()) {
-            request.setAttribute("error", error);
-        }
-        if (warning != null && !warning.isBlank()) {
-            request.setAttribute("warning", warning);
-        }
-    }
-
-    private String trim(String value) {
-        return value == null ? null : value.trim();
-    }
-
-    private String encode(String value) {
-        return URLEncoder.encode(value, StandardCharsets.UTF_8);
     }
 }

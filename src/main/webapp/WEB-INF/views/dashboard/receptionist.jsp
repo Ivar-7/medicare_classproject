@@ -34,7 +34,7 @@
                                 <p class="text-muted small mb-2">Total Students</p>
                                 <h4 class="fw-bold mb-0">${studentCount}</h4>
                             </div>
-                            <div class="text-primary" style="font-size: 32px;">
+                            <div class="text-primary fs-2">
                                 <i class="bi bi-people-fill"></i>
                             </div>
                         </div>
@@ -49,7 +49,7 @@
                                 <p class="text-muted small mb-2">Total Visits</p>
                                 <h4 class="fw-bold mb-0">${visitCount}</h4>
                             </div>
-                            <div class="text-success" style="font-size: 32px;">
+                            <div class="text-success fs-2">
                                 <i class="bi bi-clipboard2-check-fill"></i>
                             </div>
                         </div>
@@ -118,7 +118,7 @@
                                                     <td>${visit.regNumber}</td>
                                                     <td class="text-muted small">${visit.visitDate}</td>
                                                     <td>
-                                                        <span class="text-truncate d-inline-block" style="max-width: 200px;"
+                                                          <span class="text-truncate d-inline-block truncate-200"
                                                               title="${visit.symptoms}">${visit.symptoms}</span>
                                                     </td>
                                                     <td class="text-end px-4">

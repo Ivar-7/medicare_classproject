@@ -4,7 +4,6 @@
     --primary-subtle: #cfe2ff;
     --surface:        #f8f9fa;
     --topbar-height:  56px;
-    --sidebar-bg:     #1e2a3a;
 }
 
 /* ─── Global Layout ────────────────────────────────────────────────────────── */
@@ -118,15 +117,6 @@ main.main-content {
     text-align: left;
 }
 
-/* ─── Login Page ───────────────────────────────────────────────────────────── */
-.login-body {
-    background: linear-gradient(135deg, #0d6efd 0%, #1e2a3a 100%);
-}
-
-.login-card {
-    border-radius: 1rem;
-}
-
 /* ─── Footer ───────────────────────────────────────────────────────────────── */
 .footer {
     margin-top: auto;
@@ -141,4 +131,20 @@ main.main-content {
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
+}
+
+.truncate-130 {
+    max-width: 130px;
+}
+
+.truncate-160 {
+    max-width: 160px;
+}
+
+.truncate-200 {
+    max-width: 200px;
+}
+
+.truncate-280 {
+    max-width: 280px;
 }

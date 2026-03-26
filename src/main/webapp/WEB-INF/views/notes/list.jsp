@@ -55,7 +55,7 @@
                                                 </a>
                                             </td>
                                             <td>
-                                                <span class="text-truncate d-inline-block" style="max-width:280px"
+                                                <span class="text-truncate d-inline-block truncate-280"
                                                       title="${n.clinicalNotes}">${n.clinicalNotes}</span>
                                             </td>
                                             <td>

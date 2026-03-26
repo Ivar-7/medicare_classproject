@@ -27,6 +27,10 @@ public class MedicalVisitService {
         return visitDAO.findByDoctor(doctorId);
     }
 
+    public List<MedicalVisit> getPendingVisitsByDoctor(int doctorId) throws SQLException {
+        return visitDAO.findPendingByDoctor(doctorId);
+    }
+
     public List<MedicalVisit> getRecentVisits(int limit) throws SQLException {
         return visitDAO.findRecent(limit);
     }
@@ -41,6 +45,10 @@ public class MedicalVisitService {
 
     public int countVisitsByDoctor(int doctorId) throws SQLException {
         return visitDAO.countByDoctor(doctorId);
+    }
+
+    public int countPendingVisitsByDoctor(int doctorId) throws SQLException {
+        return visitDAO.countPendingByDoctor(doctorId);
     }
 
     public int createVisit(MedicalVisit visit) throws SQLException {

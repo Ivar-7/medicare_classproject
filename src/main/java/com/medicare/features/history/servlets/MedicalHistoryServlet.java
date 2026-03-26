@@ -2,6 +2,7 @@ package com.medicare.features.history.servlets;
 
 import com.medicare.features.history.services.MedicalHistoryService;
 import com.medicare.models.StudentMedicalHistory;
+import com.medicare.shared.utils.ServletRequestUtils;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -23,8 +24,9 @@ public class MedicalHistoryServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        String regNumber = trim(request.getParameter("regNumber"));
-        boolean includeDiseases = "true".equalsIgnoreCase(trim(request.getParameter("includeDiseases")));
+        String regNumber = ServletRequestUtils.trim(request.getParameter("regNumber"));
+        boolean includeDiseases = "true".equalsIgnoreCase(
+            ServletRequestUtils.trim(request.getParameter("includeDiseases")));
 
         request.setAttribute("includeDiseases", includeDiseases);
 
@@ -50,9 +52,5 @@ public class MedicalHistoryServlet extends HttpServlet {
             request.setAttribute("error", "Failed to load medical history. Please try again.");
             request.getRequestDispatcher("/WEB-INF/views/history/print.jsp").forward(request, response);
         }
-    }
-
-    private String trim(String value) {
-        return value == null ? null : value.trim();
     }
 }

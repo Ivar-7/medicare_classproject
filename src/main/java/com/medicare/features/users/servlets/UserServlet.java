@@ -2,6 +2,7 @@ package com.medicare.features.users.servlets;
 
 import com.medicare.features.users.services.UserService;
 import com.medicare.models.User;
+import com.medicare.shared.utils.ServletRequestUtils;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -9,9 +10,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.util.Locale;
+import java.util.regex.Pattern;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -19,6 +18,7 @@ import java.util.logging.Logger;
 public class UserServlet extends HttpServlet {
 
     private static final Logger logger = Logger.getLogger(UserServlet.class.getName());
+    private static final Pattern FULL_NAME_PATTERN = Pattern.compile("^[A-Za-z][A-Za-z\\s'.-]*$");
 
     private final UserService userService = new UserService();
 
@@ -26,7 +26,7 @@ public class UserServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         String pathInfo = request.getPathInfo();
-        exposeAlertsFromQuery(request);
+        ServletRequestUtils.exposeAlertsFromQuery(request);
         try {
             if (pathInfo == null || pathInfo.equals("/")) {
                 request.setAttribute("users", userService.getAllUsers());
@@ -54,7 +54,7 @@ public class UserServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        String action = trim(request.getParameter("action"));
+        String action = ServletRequestUtils.trim(request.getParameter("action"));
         if ("delete".equalsIgnoreCase(action)) {
             deleteUser(request, response);
             return;
@@ -64,11 +64,11 @@ public class UserServlet extends HttpServlet {
 
     private void saveUser(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        String userIdRaw = trim(request.getParameter("userId"));
-        String username = trim(request.getParameter("username"));
-        String fullName = trim(request.getParameter("fullName"));
-        String roleRaw = trim(request.getParameter("role"));
-        String password = trim(request.getParameter("password"));
+        String userIdRaw = ServletRequestUtils.trim(request.getParameter("userId"));
+        String username = ServletRequestUtils.trim(request.getParameter("username"));
+        String fullName = ServletRequestUtils.trim(request.getParameter("fullName"));
+        String roleRaw = ServletRequestUtils.trim(request.getParameter("role"));
+        String password = ServletRequestUtils.trim(request.getParameter("password"));
 
         boolean isCreate = userIdRaw == null || userIdRaw.isBlank();
 
@@ -78,6 +78,11 @@ public class UserServlet extends HttpServlet {
         }
         if (fullName == null || fullName.isBlank()) {
             forwardWithError(request, response, "Full name is required.", userIdRaw, username, fullName, roleRaw);
+            return;
+        }
+        if (!FULL_NAME_PATTERN.matcher(fullName).matches()) {
+            forwardWithError(request, response, "Full name cannot contain numbers.",
+                             userIdRaw, username, fullName, roleRaw);
             return;
         }
         if (roleRaw == null || roleRaw.isBlank()) {
@@ -126,8 +131,8 @@ public class UserServlet extends HttpServlet {
             if (isCreate) {
                 user.setPassword(password);
                 userService.createUser(user);
-                response.sendRedirect(request.getContextPath() + "/users?success=" +
-                                      encode("User created successfully."));
+                ServletRequestUtils.redirectWithMessage(request, response, "/users", "success",
+                                                       "User created successfully.");
                 return;
             }
 
@@ -138,36 +143,35 @@ public class UserServlet extends HttpServlet {
                 userService.changePassword(userId, password);
             }
 
-            response.sendRedirect(request.getContextPath() + "/users?success=" +
-                                  encode("User updated successfully."));
+            ServletRequestUtils.redirectWithMessage(request, response, "/users", "success",
+                                                   "User updated successfully.");
         } catch (Exception e) {
             logger.log(Level.SEVERE, "UserServlet POST save error", e);
-            response.sendRedirect(request.getContextPath() + "/users?error=" +
-                                  encode("A system error occurred while saving the user."));
+            ServletRequestUtils.redirectWithMessage(request, response, "/users", "error",
+                                                   "A system error occurred while saving the user.");
         }
     }
 
     private void deleteUser(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
-        String userIdRaw = trim(request.getParameter("userId"));
+        String userIdRaw = ServletRequestUtils.trim(request.getParameter("userId"));
         if (userIdRaw == null || userIdRaw.isBlank()) {
-            response.sendRedirect(request.getContextPath() + "/users?error=" +
-                                  encode("User ID is required to delete."));
+            ServletRequestUtils.redirectWithMessage(request, response, "/users", "error",
+                                                   "User ID is required to delete.");
             return;
         }
 
         try {
             int userId = Integer.parseInt(userIdRaw);
             userService.deleteUser(userId);
-            response.sendRedirect(request.getContextPath() + "/users?success=" +
-                                  encode("User deleted successfully."));
+            ServletRequestUtils.redirectWithMessage(request, response, "/users", "success",
+                                                   "User deleted successfully.");
         } catch (NumberFormatException e) {
-            response.sendRedirect(request.getContextPath() + "/users?error=" +
-                                  encode("Invalid user ID."));
+            ServletRequestUtils.redirectWithMessage(request, response, "/users", "error", "Invalid user ID.");
         } catch (Exception e) {
             logger.log(Level.SEVERE, "UserServlet POST delete error", e);
-            response.sendRedirect(request.getContextPath() + "/users?error=" +
-                                  encode("A system error occurred while deleting the user."));
+            ServletRequestUtils.redirectWithMessage(request, response, "/users", "error",
+                                                   "A system error occurred while deleting the user.");
         }
     }
 
@@ -205,39 +209,8 @@ public class UserServlet extends HttpServlet {
     }
 
     private boolean usernameTakenForDifferentUser(String username, int currentUserId) throws Exception {
-        String normalized = username.toLowerCase(Locale.ROOT);
-        for (User existingUser : userService.getAllUsers()) {
-            boolean sameUsername = existingUser.getUsername() != null
-                                   && existingUser.getUsername().toLowerCase(Locale.ROOT).equals(normalized);
-            boolean differentUser = existingUser.getUserId() != currentUserId;
-            if (sameUsername && differentUser) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private void exposeAlertsFromQuery(HttpServletRequest request) {
-        String success = trim(request.getParameter("success"));
-        String error = trim(request.getParameter("error"));
-        String warning = trim(request.getParameter("warning"));
-
-        if (success != null && !success.isBlank()) {
-            request.setAttribute("success", success);
-        }
-        if (error != null && !error.isBlank()) {
-            request.setAttribute("error", error);
-        }
-        if (warning != null && !warning.isBlank()) {
-            request.setAttribute("warning", warning);
-        }
-    }
-
-    private String trim(String value) {
-        return value == null ? null : value.trim();
-    }
-
-    private String encode(String value) {
-        return URLEncoder.encode(value, StandardCharsets.UTF_8);
+        return userService.getUserByUsername(username)
+                .map(existingUser -> existingUser.getUserId() != currentUserId)
+                .orElse(false);
     }
 }

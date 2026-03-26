@@ -10,6 +10,7 @@ public class MedicalVisit {
     private LocalDateTime visitDate;
     private String        symptoms;
     private String        diagnosis;
+    private boolean       completed;
 
     // Transient display fields (populated by JOIN queries)
     private String studentName;
@@ -18,13 +19,14 @@ public class MedicalVisit {
     public MedicalVisit() { }
 
     public MedicalVisit(int visitId, String regNumber, int doctorId,
-                        LocalDateTime visitDate, String symptoms, String diagnosis) {
+                        LocalDateTime visitDate, String symptoms, String diagnosis, boolean completed) {
         this.visitId   = visitId;
         this.regNumber = regNumber;
         this.doctorId  = doctorId;
         this.visitDate = visitDate;
         this.symptoms  = symptoms;
         this.diagnosis = diagnosis;
+        this.completed = completed;
     }
 
     // ── Getters ──────────────────────────────────────────────────────────────
@@ -35,6 +37,8 @@ public class MedicalVisit {
     public LocalDateTime getVisitDate()   { return visitDate;   }
     public String        getSymptoms()    { return symptoms;    }
     public String        getDiagnosis()   { return diagnosis;   }
+    public boolean       isCompleted()    { return completed;   }
+    public boolean       getCompleted()   { return completed;   }
     public String        getStudentName() { return studentName; }
     public String        getDoctorName()  { return doctorName;  }
     public String        getVisitDateInput() {
@@ -52,6 +56,7 @@ public class MedicalVisit {
     public void setVisitDate(LocalDateTime visitDate) { this.visitDate   = visitDate;   }
     public void setSymptoms(String symptoms)          { this.symptoms    = symptoms;    }
     public void setDiagnosis(String diagnosis)        { this.diagnosis   = diagnosis;   }
+    public void setCompleted(boolean completed)       { this.completed   = completed;   }
     public void setStudentName(String studentName)    { this.studentName = studentName; }
     public void setDoctorName(String doctorName)      { this.doctorName  = doctorName;  }
 

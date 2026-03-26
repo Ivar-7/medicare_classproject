@@ -17,7 +17,7 @@
                 <form method="post" action="${pageContext.request.contextPath}/audit"
                       onsubmit="return confirm('Clear all audit logs? This action cannot be undone.');">
                     <button type="submit" name="action" value="clear" class="btn btn-outline-danger btn-sm">
-                        <i class="bi bi-trash me-1"></i>Clear Logs
+                        Clear Logs
                     </button>
                 </form>
             </c:if>

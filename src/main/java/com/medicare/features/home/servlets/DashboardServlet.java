@@ -64,9 +64,9 @@ public class DashboardServlet extends HttpServlet {
     }
 
     private void loadDoctorDashboard(HttpServletRequest request, int doctorId) throws Exception {
-        request.setAttribute("pendingVisits", visitService.getVisitsByDoctor(doctorId));
+        request.setAttribute("pendingVisits", visitService.getPendingVisitsByDoctor(doctorId));
         request.setAttribute("recentVisits", visitService.getVisitsByDoctor(doctorId));
-        request.setAttribute("pendingVisitsCount", visitService.countVisitsByDoctor(doctorId));
+        request.setAttribute("pendingVisitsCount", visitService.countPendingVisitsByDoctor(doctorId));
         request.setAttribute("totalVisitsCount", visitService.countVisitsByDoctor(doctorId));
     }
 

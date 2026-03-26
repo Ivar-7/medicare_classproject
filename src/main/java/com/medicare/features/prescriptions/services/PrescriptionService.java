@@ -23,6 +23,10 @@ public class PrescriptionService {
         return prescriptionDAO.findByVisit(visitId);
     }
 
+    public List<Prescription> getPrescriptionsByDoctor(int doctorId) throws SQLException {
+        return prescriptionDAO.findByDoctor(doctorId);
+    }
+
     public void createPrescription(Prescription prescription) throws SQLException {
         prescriptionDAO.save(prescription);
     }

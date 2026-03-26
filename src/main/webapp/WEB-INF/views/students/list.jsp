@@ -27,11 +27,11 @@
                     <input type="text" name="q" class="form-control form-control-sm"
                            placeholder="Search by name or reg. number..." value="${query}">
                     <button type="submit" class="btn btn-sm btn-outline-primary px-3">
-                        <i class="bi bi-search"></i>
+                        Search
                     </button>
                     <c:if test="${not empty query}">
                         <a href="${pageContext.request.contextPath}/students" class="btn btn-sm btn-outline-secondary px-3">
-                            <i class="bi bi-x"></i>
+                            Clear
                         </a>
                     </c:if>
                 </form>

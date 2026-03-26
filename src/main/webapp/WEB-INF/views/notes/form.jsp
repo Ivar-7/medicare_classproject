@@ -18,7 +18,6 @@
                 </ol>
             </nav>
             <h5 class="fw-bold mb-0">
-                <i class="bi bi-journal-plus text-primary me-2"></i>
                 ${empty note ? 'Add Treatment Note' : 'Edit Treatment Note'}
             </h5>
         </div>
@@ -53,11 +52,10 @@
                     <div class="col-12 d-flex gap-2 pt-2">
                         <button type="submit" name="action" value="${empty note ? 'create' : 'update'}"
                                 class="btn btn-primary">
-                            <i class="bi bi-check2-circle me-1"></i>
                             ${empty note ? 'Save Note' : 'Update Note'}
                         </button>
                         <a href="${pageContext.request.contextPath}/notes" class="btn btn-outline-secondary">
-                            <i class="bi bi-arrow-left me-1"></i>Back to Notes
+                            Back to Notes
                         </a>
                     </div>
                 </form>
@@ -68,7 +66,7 @@
                           onsubmit="return confirm('Delete this treatment note? This action cannot be undone.');">
                         <input type="hidden" name="noteId" value="${note.noteId}">
                         <button type="submit" name="action" value="delete" class="btn btn-outline-danger">
-                            <i class="bi bi-trash me-1"></i>Delete Note
+                            Delete Note
                         </button>
                     </form>
                 </c:if>

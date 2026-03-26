@@ -22,12 +22,14 @@
                     </a>
                 </li>
 
-                <!-- All roles can view students -->
-                <li class="nav-item">
-                    <a class="nav-link rounded px-3" href="${pageContext.request.contextPath}/students">
-                        <i class="bi bi-people me-1"></i>Students
-                    </a>
-                </li>
+                <!-- All roles except Doctor can view students -->
+                <c:if test="${sessionScope.currentUser.roleName != 'Doctor'}">
+                    <li class="nav-item">
+                        <a class="nav-link rounded px-3" href="${pageContext.request.contextPath}/students">
+                            <i class="bi bi-people me-1"></i>Students
+                        </a>
+                    </li>
+                </c:if>
 
                 <!-- Receptionist: Record visits; Doctor: View visits; Tech: View visits -->
                 <c:if test="${sessionScope.currentUser.roleName == 'Receptionist' || sessionScope.currentUser.roleName == 'Doctor'}">

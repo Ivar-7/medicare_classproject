@@ -20,81 +20,70 @@
                 </ol>
             </nav>
             <h5 class="fw-bold mb-0">
-                <i class="bi bi-capsule text-primary me-2"></i>
                 ${empty prescription ? 'Write New Prescription' : 'Edit Prescription'}
             </h5>
         </div>
 
         <jsp:include page="/components/alerts.jsp" />
 
-<div class="card border-0 shadow-sm">
-    <div class="card-body p-4">
-        <h6 class="fw-bold mb-3">Prescription Details</h6>
-        
-        <form action="${pageContext.request.contextPath}/prescriptions" method="POST">
-    
-            <input type="hidden" name="prescriptionId" value="${prescription.prescriptionId}">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4 p-md-5">
+                <h6 class="fw-bold mb-3">Prescription Details</h6>
 
-            <div class="mb-3">
-                <label class="form-label">Visit ID</label>
-                <input type="number" name="visitId" class="form-control" 
-                       value="${prescription.visitId}" required>
-                <div class="form-text">Enter the numeric ID from the medical visit.</div>
+                <form method="post" action="${pageContext.request.contextPath}/prescriptions" class="row g-3">
+
+                    <input type="hidden" name="prescriptionId" value="${prescription.prescriptionId}">
+
+                    <div class="col-md-6">
+                        <label for="visitId" class="form-label">Visit ID</label>
+                        <input id="visitId" type="number" name="visitId" class="form-control"
+                               value="${prescription.visitId}" min="1" step="1" required>
+                        <div class="form-text">Enter the numeric ID from the medical visit.</div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="studentRegNumber" class="form-label">Student ID (Reg Number)</label>
+                        <input id="studentRegNumber" type="text" name="studentRegNumber" class="form-control"
+                               value="${not empty prescription.studentRegNumber ? prescription.studentRegNumber : studentRegNumber}"
+                               placeholder="e.g. STU-001" required>
+                        <div class="form-text">Must match the student linked to the selected visit.</div>
+                    </div>
+
+                    <div class="col-md-12">
+                        <label for="medicineName" class="form-label">Medicine Name</label>
+                        <input id="medicineName" type="text" name="medicineName" class="form-control"
+                               value="${prescription.medicineName}" required>
+                    </div>
+
+                    <div class="col-md-12">
+                        <label for="diagnosis" class="form-label">Diagnosis</label>
+                        <input id="diagnosis" type="text" name="diagnosis" class="form-control"
+                               value="${prescription.diagnosis}" placeholder="e.g. Malaria" required>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="dosage" class="form-label">Dosage</label>
+                        <input id="dosage" type="text" name="dosage" class="form-control"
+                               placeholder="e.g. 500mg" value="${prescription.dosage}" required>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="duration" class="form-label">Duration</label>
+                        <input id="duration" type="text" name="duration" class="form-control"
+                               placeholder="e.g. 7 days" value="${prescription.duration}" required>
+                    </div>
+
+                    <div class="col-12 d-flex justify-content-between pt-2">
+                        <a href="${pageContext.request.contextPath}/prescriptions" class="btn btn-outline-secondary">
+                            Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary px-4">
+                            Save Prescription
+                        </button>
+                    </div>
+                </form>
             </div>
-
-            <div class="mb-3">
-                <label class="form-label">Student ID (Reg Number)</label>
-                <input type="text" name="studentRegNumber" class="form-control"
-                       value="${not empty prescription.studentRegNumber ? prescription.studentRegNumber : studentRegNumber}"
-                       placeholder="e.g. STU-001" required>
-                <div class="form-text">Must match the student linked to the selected visit.</div>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Medicine Name</label>
-                <input type="text" name="medicineName" class="form-control" 
-                       value="${prescription.medicineName}" required>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Disease</label>
-                <input type="text" name="disease" class="form-control"
-                       value="${prescription.disease}" placeholder="e.g. Hypertension" required>
-                <div class="form-text">Enter the disease or diagnosis.</div>
-            </div>
-
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">Dosage</label>
-                    <input type="text" name="dosage" class="form-control" placeholder="e.g. 500mg" 
-                              value="${prescription.dosage}" required>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">Duration</label>
-                    <input type="text" name="duration" class="form-control" placeholder="e.g. 7 days" 
-                              value="${prescription.duration}" required>
-                </div>
-            </div>
-
-            <hr class="my-4">
-
-            <div class="d-flex justify-content-between">
-                <a href="${pageContext.request.contextPath}/prescriptions" class="btn btn-outline-secondary">
-                    <i class="bi bi-arrow-left me-1"></i>Cancel
-                </a>
-                <button type="submit" class="btn btn-primary px-4">
-                    <i class="bi bi-check-lg me-1"></i>Save Prescription
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
-
-      <!--<a href="${pageContext.request.contextPath}/prescriptions" class="btn btn-sm btn-outline-secondary mt-3">
-    <i class="bi bi-arrow-left me-1"></i>Back to Prescriptions
-</a>
-            </div>
-        </div>-->
+        </div>
 
     </div>
 </main>
