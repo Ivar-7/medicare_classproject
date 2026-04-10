@@ -9,33 +9,33 @@ import java.util.Optional;
 
 public class StudentService {
 
-    private final StudentDAO studentDAO = new StudentDAO();
+  private final StudentDAO studentDAO = new StudentDAO();
 
-    public List<Student> getAllStudents() throws SQLException {
-        return studentDAO.findAll();
-    }
+  public List<Student> getAllStudents() throws SQLException {
+    return studentDAO.findAll();
+  }
 
-    public Optional<Student> getStudentByRegNumber(String regNumber) throws SQLException {
-        return studentDAO.findByRegNumber(regNumber);
-    }
+  public Optional<Student> getStudentByRegNumber(int regNumber) throws SQLException {
+    return studentDAO.findByRegNumber(regNumber);
+  }
 
-    public List<Student> searchStudents(String query) throws SQLException {
-        return studentDAO.search(query);
-    }
+  public List<Student> searchStudents(String query) throws SQLException {
+    return studentDAO.search(query);
+  }
 
-    public void createStudent(Student student) throws SQLException {
-        studentDAO.save(student);
-    }
+  public void createStudent(Student student) throws SQLException {
+    studentDAO.save(student);
+  }
 
-    public void updateStudent(Student student) throws SQLException {
-        studentDAO.update(student);
-    }
+  public void updateStudent(Student student) throws SQLException {
+    studentDAO.update(student);
+  }
 
-    public void deleteStudent(String regNumber) throws SQLException {
-        studentDAO.delete(regNumber);
-    }
+  public void deleteStudent(int regNumber) throws SQLException {
+    studentDAO.delete(regNumber);
+  }
 
-    public int countStudents() throws SQLException {
-        return studentDAO.count();
-    }
+  public int countStudents() throws SQLException {
+    return studentDAO.count();
+  }
 }

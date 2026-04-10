@@ -17,35 +17,37 @@ import java.util.Optional;
 
 public class MedicalHistoryService {
 
-    private final StudentService studentService = new StudentService();
-    private final MedicalVisitService visitService = new MedicalVisitService();
-    private final PrescriptionService prescriptionService = new PrescriptionService();
-    private final TreatmentNoteService noteService = new TreatmentNoteService();
+  private final StudentService studentService = new StudentService();
+  private final MedicalVisitService visitService = new MedicalVisitService();
+  private final PrescriptionService prescriptionService = new PrescriptionService();
+  private final TreatmentNoteService noteService = new TreatmentNoteService();
 
-    public Optional<StudentMedicalHistory> getStudentHistory(String regNumber, boolean includeDiseases) throws SQLException {
-        Optional<Student> studentOpt = studentService.getStudentByRegNumber(regNumber);
-        if (studentOpt.isEmpty()) {
-            return Optional.empty();
-        }
-
-        StudentMedicalHistory history = new StudentMedicalHistory();
-        history.setStudent(studentOpt.get());
-
-        List<MedicalVisit> visits = visitService.getVisitsByStudent(regNumber);
-        history.setVisits(visits);
-
-        List<Prescription> allPrescriptions = new ArrayList<>();
-        List<TreatmentNote> allLabNotes = new ArrayList<>();
-
-        for (MedicalVisit visit : visits) {
-            List<Prescription> visitPrescriptions = prescriptionService.getPrescriptionsByVisit(visit.getVisitId());
-            allPrescriptions.addAll(visitPrescriptions);
-            allLabNotes.addAll(noteService.getNotesByVisit(visit.getVisitId()));
-        }
-
-        history.setPrescriptions(allPrescriptions);
-        history.setLabHistory(allLabNotes);
-
-        return Optional.of(history);
+  public Optional<StudentMedicalHistory> getStudentHistory(String regNumber, boolean includeDiseases)
+      throws SQLException {
+    int regNum = Integer.parseInt(regNumber);
+    Optional<Student> studentOpt = studentService.getStudentByRegNumber(regNum);
+    if (studentOpt.isEmpty()) {
+      return Optional.empty();
     }
+
+    StudentMedicalHistory history = new StudentMedicalHistory();
+    history.setStudent(studentOpt.get());
+
+    List<MedicalVisit> visits = visitService.getVisitsByStudent(regNum);
+    history.setVisits(visits);
+
+    List<Prescription> allPrescriptions = new ArrayList<>();
+    List<TreatmentNote> allLabNotes = new ArrayList<>();
+
+    for (MedicalVisit visit : visits) {
+      List<Prescription> visitPrescriptions = prescriptionService.getPrescriptionsByVisit(visit.getVisitId());
+      allPrescriptions.addAll(visitPrescriptions);
+      allLabNotes.addAll(noteService.getNotesByVisit(visit.getVisitId()));
+    }
+
+    history.setPrescriptions(allPrescriptions);
+    history.setLabHistory(allLabNotes);
+
+    return Optional.of(history);
+  }
 }

@@ -2,7 +2,7 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
     <div class="container-fluid px-4">
 
-        <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="${pageContext.request.contextPath}/dashboard">
+        <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="${pageContext.request.contextPath}/home">
             <i class="bi bi-hospital-fill fs-5"></i>
             <span>School Medical System</span>
         </a>
@@ -16,8 +16,8 @@
             <ul class="navbar-nav me-auto gap-1">
 
                 <li class="nav-item">
-                    <a class="nav-link rounded px-3 ${requestScope['javax.servlet.forward.servlet_path'] eq '/dashboard' ? 'active' : ''}"
-                       href="${pageContext.request.contextPath}/dashboard">
+                    <a class="nav-link rounded px-3 ${requestScope['javax.servlet.forward.servlet_path'] eq '/home' ? 'active' : ''}"
+                       href="${pageContext.request.contextPath}/home">
                         <i class="bi bi-speedometer2 me-1"></i>Dashboard
                     </a>
                 </li>

@@ -17,126 +17,134 @@ import java.util.Optional;
 
 public class QueueDAO {
 
-    private Queue mapRow(ResultSet rs) throws SQLException {
-        Queue queue = new Queue(
-            rs.getInt("queue_id"),
-            rs.getString("reg_number"),
-            LocalDate.parse(rs.getString("visit_date")),
-            PriorityLevel.valueOf(rs.getString("priority_level")),
-            Status.valueOf(rs.getString("status"))
-        );
+  private Queue mapRow(ResultSet rs) throws SQLException {
+    Queue queue = new Queue(
+        rs.getInt("queue_id"),
+        rs.getInt("reg_number"),
+        rs.getInt("visit_id"),
+        LocalDate.parse(rs.getString("queue_date")),
+        PriorityLevel.valueOf(rs.getString("priority_level")),
+        Status.valueOf(rs.getString("status")),
+        rs.getInt("position_number"),
+        rs.getObject("created_at") != null ? LocalDate.parse(rs.getString("created_at")) : null,
+        rs.getObject("updated_at") != null ? LocalDate.parse(rs.getString("updated_at")) : null);
 
-        // Set student name if available from JOIN
-        try {
-            String studentName = rs.getString("student_name");
-            if (studentName != null) queue.setStudentName(studentName);
-        } catch (SQLException ignored) { }
-
-        return queue;
+    // Set student name if available from JOIN
+    try {
+      String studentName = rs.getString("student_name");
+      if (studentName != null)
+        queue.setStudentName(studentName);
+    } catch (SQLException ignored) {
     }
 
-    public List<Queue> findAll() throws SQLException {
-        String sql = """
-            SELECT q.*, s.full_name AS student_name
-            FROM queue q
-            LEFT JOIN students s ON q.reg_number = s.reg_number
-            ORDER BY q.visit_date DESC, q.priority_level DESC
-            """;
-        List<Queue> queues = new ArrayList<>();
-        try (Connection conn = DatabaseConfig.getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs   = stmt.executeQuery(sql)) {
-            while (rs.next()) queues.add(mapRow(rs));
-        }
-        return queues;
-    }
+    return queue;
+  }
 
-    public List<Queue> findByStatus(Status status) throws SQLException {
-        String sql = """
-            SELECT q.*, s.full_name AS student_name
-            FROM queue q
-            LEFT JOIN students s ON q.reg_number = s.reg_number
-            WHERE q.status = ?
-            ORDER BY q.priority_level DESC, q.visit_date
-            """;
-        List<Queue> queues = new ArrayList<>();
-        try (Connection conn = DatabaseConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, status.name());
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) queues.add(mapRow(rs));
-            }
-        }
-        return queues;
+  public List<Queue> findAll() throws SQLException {
+    String sql = "SELECT q.*, (s.first_name || ' ' || s.last_name) AS student_name " +
+        "FROM queue q " +
+        "LEFT JOIN students s ON q.reg_number = s.reg_number " +
+        "ORDER BY q.queue_date DESC, q.priority_level DESC";
+    List<Queue> queues = new ArrayList<>();
+    try (Connection conn = DatabaseConfig.getConnection();
+        Statement stmt = conn.createStatement();
+        ResultSet rs = stmt.executeQuery(sql)) {
+      while (rs.next())
+        queues.add(mapRow(rs));
     }
+    return queues;
+  }
 
-    public Optional<Queue> findById(int queueId) throws SQLException {
-        String sql = """
-            SELECT q.*, s.full_name AS student_name
-            FROM queue q
-            LEFT JOIN students s ON q.reg_number = s.reg_number
-            WHERE q.queue_id = ?
-            """;
-        try (Connection conn = DatabaseConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, queueId);
-            try (ResultSet rs = ps.executeQuery()) {
-                return rs.next() ? Optional.of(mapRow(rs)) : Optional.empty();
-            }
-        }
+  public List<Queue> findByStatus(Status status) throws SQLException {
+    String sql = "SELECT q.*, (s.first_name || ' ' || s.last_name) AS student_name " +
+        "FROM queue q " +
+        "LEFT JOIN students s ON q.reg_number = s.reg_number " +
+        "WHERE q.status = ? " +
+        "ORDER BY q.priority_level DESC, q.queue_date";
+    List<Queue> queues = new ArrayList<>();
+    try (Connection conn = DatabaseConfig.getConnection();
+        PreparedStatement ps = conn.prepareStatement(sql)) {
+      ps.setString(1, status.name());
+      try (ResultSet rs = ps.executeQuery()) {
+        while (rs.next())
+          queues.add(mapRow(rs));
+      }
     }
+    return queues;
+  }
 
-    public void save(Queue queue) throws SQLException {
-        String sql = "INSERT INTO queue (reg_number, visit_date, priority_level, status) VALUES (?,?,?,?)";
-        try (Connection conn = DatabaseConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, queue.getRegNumber());
-            ps.setString(2, queue.getVisitDate().toString());
-            ps.setString(3, queue.getPriorityLevel().name());
-            ps.setString(4, queue.getStatus().name());
-            ps.executeUpdate();
-        }
+  public Optional<Queue> findById(int queueId) throws SQLException {
+    String sql = "SELECT q.*, (s.first_name || ' ' || s.last_name) AS student_name " +
+        "FROM queue q " +
+        "LEFT JOIN students s ON q.reg_number = s.reg_number " +
+        "WHERE q.queue_id = ?";
+    try (Connection conn = DatabaseConfig.getConnection();
+        PreparedStatement ps = conn.prepareStatement(sql)) {
+      ps.setInt(1, queueId);
+      try (ResultSet rs = ps.executeQuery()) {
+        return rs.next() ? Optional.of(mapRow(rs)) : Optional.empty();
+      }
     }
+  }
 
-    public void update(Queue queue) throws SQLException {
-        String sql = "UPDATE queue SET reg_number=?, visit_date=?, priority_level=?, status=? WHERE queue_id=?";
-        try (Connection conn = DatabaseConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, queue.getRegNumber());
-            ps.setString(2, queue.getVisitDate().toString());
-            ps.setString(3, queue.getPriorityLevel().name());
-            ps.setString(4, queue.getStatus().name());
-            ps.setInt(5, queue.getQueueId());
-            ps.executeUpdate();
-        }
+  public void save(Queue queue) throws SQLException {
+    String sql = "INSERT INTO queue (reg_number, visit_id, queue_date, priority_level, status, position_number, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?)";
+    try (Connection conn = DatabaseConfig.getConnection();
+        PreparedStatement ps = conn.prepareStatement(sql)) {
+      ps.setInt(1, queue.getRegNumber());
+      ps.setInt(2, queue.getVisitId());
+      ps.setString(3, queue.getQueueDate().toString());
+      ps.setString(4, queue.getPriorityLevel().name());
+      ps.setString(5, queue.getStatus().name());
+      ps.setInt(6, queue.getPositionNumber());
+      ps.setString(7, LocalDate.now().toString());
+      ps.setString(8, LocalDate.now().toString());
+      ps.executeUpdate();
     }
+  }
 
-    public void delete(int queueId) throws SQLException {
-        String sql = "DELETE FROM queue WHERE queue_id=?";
-        try (Connection conn = DatabaseConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, queueId);
-            ps.executeUpdate();
-        }
+  public void update(Queue queue) throws SQLException {
+    String sql = "UPDATE queue SET reg_number=?, visit_id=?, queue_date=?, priority_level=?, status=?, position_number=?, updated_at=? WHERE queue_id=?";
+    try (Connection conn = DatabaseConfig.getConnection();
+        PreparedStatement ps = conn.prepareStatement(sql)) {
+      ps.setInt(1, queue.getRegNumber());
+      ps.setInt(2, queue.getVisitId());
+      ps.setString(3, queue.getQueueDate().toString());
+      ps.setString(4, queue.getPriorityLevel().name());
+      ps.setString(5, queue.getStatus().name());
+      ps.setInt(6, queue.getPositionNumber());
+      ps.setString(7, LocalDate.now().toString());
+      ps.setInt(8, queue.getQueueId());
+      ps.executeUpdate();
     }
+  }
 
-    public int count() throws SQLException {
-        String sql = "SELECT COUNT(*) FROM queue";
-        try (Connection conn = DatabaseConfig.getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs   = stmt.executeQuery(sql)) {
-            return rs.next() ? rs.getInt(1) : 0;
-        }
+  public void delete(int queueId) throws SQLException {
+    String sql = "DELETE FROM queue WHERE queue_id=?";
+    try (Connection conn = DatabaseConfig.getConnection();
+        PreparedStatement ps = conn.prepareStatement(sql)) {
+      ps.setInt(1, queueId);
+      ps.executeUpdate();
     }
+  }
 
-    public int countByStatus(Status status) throws SQLException {
-        String sql = "SELECT COUNT(*) FROM queue WHERE status = ?";
-        try (Connection conn = DatabaseConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, status.name());
-            try (ResultSet rs = ps.executeQuery()) {
-                return rs.next() ? rs.getInt(1) : 0;
-            }
-        }
+  public int count() throws SQLException {
+    String sql = "SELECT COUNT(*) FROM queue";
+    try (Connection conn = DatabaseConfig.getConnection();
+        Statement stmt = conn.createStatement();
+        ResultSet rs = stmt.executeQuery(sql)) {
+      return rs.next() ? rs.getInt(1) : 0;
     }
+  }
+
+  public int countByStatus(Status status) throws SQLException {
+    String sql = "SELECT COUNT(*) FROM queue WHERE status = ?";
+    try (Connection conn = DatabaseConfig.getConnection();
+        PreparedStatement ps = conn.prepareStatement(sql)) {
+      ps.setString(1, status.name());
+      try (ResultSet rs = ps.executeQuery()) {
+        return rs.next() ? rs.getInt(1) : 0;
+      }
+    }
+  }
 }

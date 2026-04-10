@@ -25,7 +25,7 @@ public class LoginServlet extends HttpServlet {
             throws ServletException, IOException {
         HttpSession session = request.getSession(false);
         if (session != null && session.getAttribute("currentUser") != null) {
-            response.sendRedirect(request.getContextPath() + "/dashboard");
+            response.sendRedirect(request.getContextPath() + "/home");
             return;
         }
         request.getRequestDispatcher("/WEB-INF/views/auth/login.jsp").forward(request, response);
@@ -55,7 +55,7 @@ public class LoginServlet extends HttpServlet {
                     response.addCookie(cookie);
                 }
 
-                response.sendRedirect(request.getContextPath() + "/dashboard");
+                response.sendRedirect(request.getContextPath() + "/home");
             } else {
                 request.setAttribute("error", "Invalid username or password.");
                 request.getRequestDispatcher("/WEB-INF/views/auth/login.jsp").forward(request, response);

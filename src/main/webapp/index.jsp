@@ -4,7 +4,7 @@
     Object currentUser = session != null ? session.getAttribute("currentUser") : null;
 
     if (currentUser != null) {
-        response.sendRedirect(request.getContextPath() + "/dashboard");
+        response.sendRedirect(request.getContextPath() + "/home");
     } else {
         try {
             int totalUsers = new UserService().countUsers();
