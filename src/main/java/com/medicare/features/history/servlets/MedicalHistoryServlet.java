@@ -1,7 +1,6 @@
 package com.medicare.features.history.servlets;
 
 import com.medicare.features.history.services.MedicalHistoryService;
-import com.medicare.models.StudentMedicalHistory;
 import com.medicare.shared.utils.ServletRequestUtils;
 
 import javax.servlet.ServletException;
@@ -10,6 +9,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Map;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -38,14 +38,19 @@ public class MedicalHistoryServlet extends HttpServlet {
         request.setAttribute("regNumber", regNumber);
 
         try {
-            Optional<StudentMedicalHistory> history = medicalHistoryService.getStudentHistory(regNumber, includeDiseases);
+            Optional<Map<String, Object>> history = medicalHistoryService.getStudentHistory(regNumber, includeDiseases);
             if (history.isEmpty()) {
                 request.setAttribute("error", "Student ID not found.");
                 request.getRequestDispatcher("/WEB-INF/views/history/print.jsp").forward(request, response);
                 return;
             }
 
-            request.setAttribute("history", history.get());
+            Map<String, Object> historyMap = history.get();
+            request.setAttribute("student", historyMap.get("student"));
+            request.setAttribute("visits", historyMap.get("visits"));
+            request.setAttribute("prescriptions", historyMap.get("prescriptions"));
+            request.setAttribute("labHistory", historyMap.get("labHistory"));
+            
             request.getRequestDispatcher("/WEB-INF/views/history/print.jsp").forward(request, response);
         } catch (Exception e) {
             logger.log(Level.SEVERE, "MedicalHistoryServlet GET error", e);

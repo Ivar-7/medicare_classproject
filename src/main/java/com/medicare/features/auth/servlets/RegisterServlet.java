@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.regex.Pattern;
+import java.time.LocalDate;
 
 @WebServlet("/register")
 public class RegisterServlet extends HttpServlet {
@@ -120,10 +121,17 @@ public class RegisterServlet extends HttpServlet {
       }
 
       User newUser = new User();
-      newUser.setFullName(fullName);
+      String[] nameParts = fullName.trim().split("\\s+", 2);
+      String firstName = nameParts[0];
+      String lastName = nameParts.length > 1 ? nameParts[1] : "";
+      newUser.setFirstName(firstName);
+      newUser.setLastName(lastName);
       newUser.setUsername(username);
-      newUser.setPassword(password);
+      newUser.setPasswordHash(password);
       newUser.setRole(role);
+      newUser.setDateOfEmployment(LocalDate.now());
+      newUser.setCreatedAt(LocalDate.now());
+      newUser.setUpdatedAt(LocalDate.now());
 
       userService.createUser(newUser);
 

@@ -70,18 +70,6 @@ public class SchemaInit {
             ensureMedicalVisitsCompletedColumn(conn);
 
             stmt.execute(
-                "CREATE TABLE IF NOT EXISTS medical_history (" +
-                "  history_id     INTEGER PRIMARY KEY AUTOINCREMENT," +
-                "  reg_number     TEXT    NOT NULL," +
-                "  condition_name TEXT    NOT NULL," +
-                "  diagnosis_date TEXT    NOT NULL," +
-                "  doctor_id      INTEGER NOT NULL," +
-                "  FOREIGN KEY (reg_number) REFERENCES students(reg_number)," +
-                "  FOREIGN KEY (doctor_id)  REFERENCES users(user_id)" +
-                ")"
-            );
-
-            stmt.execute(
                 "CREATE TABLE IF NOT EXISTS prescriptions (" +
                 "  prescription_id INTEGER PRIMARY KEY AUTOINCREMENT," +
                 "  visit_id        INTEGER NOT NULL," +

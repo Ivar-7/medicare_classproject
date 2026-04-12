@@ -26,14 +26,14 @@ public class UserService {
 
     public Optional<User> authenticate(String username, String password) throws SQLException {
         Optional<User> user = userDAO.findByUsername(username);
-        if (user.isPresent() && PasswordUtils.verify(password, user.get().getPassword())) {
+        if (user.isPresent() && PasswordUtils.verify(password, user.get().getPasswordHash())) {
             return user;
         }
         return Optional.empty();
     }
 
     public void createUser(User user) throws SQLException {
-        user.setPassword(PasswordUtils.hash(user.getPassword()));
+        user.setPasswordHash(PasswordUtils.hash(user.getPasswordHash()));
         userDAO.save(user);
     }
 

@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.regex.Pattern;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -125,11 +126,17 @@ public class UserServlet extends HttpServlet {
 
             User user = new User();
             user.setUsername(username);
-            user.setFullName(fullName);
+            String[] nameParts = fullName.trim().split("\\s+", 2);
+            user.setFirstName(nameParts[0]);
+            user.setLastName(nameParts.length > 1 ? nameParts[1] : "");
             user.setRole(role);
 
             if (isCreate) {
-                user.setPassword(password);
+                LocalDate today = LocalDate.now();
+                user.setPasswordHash(password);
+                user.setDateOfEmployment(today);
+                user.setCreatedAt(today);
+                user.setUpdatedAt(today);
                 userService.createUser(user);
                 ServletRequestUtils.redirectWithMessage(request, response, "/users", "success",
                                                        "User created successfully.");
@@ -193,7 +200,11 @@ public class UserServlet extends HttpServlet {
         }
 
         user.setUsername(username);
-        user.setFullName(fullName);
+        if (fullName != null && !fullName.isBlank()) {
+            String[] nameParts = fullName.trim().split("\\s+", 2);
+            user.setFirstName(nameParts[0]);
+            user.setLastName(nameParts.length > 1 ? nameParts[1] : "");
+        }
 
         if (roleRaw != null && !roleRaw.isBlank()) {
             try {

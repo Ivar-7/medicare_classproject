@@ -116,6 +116,12 @@ public class PrescriptionServlet extends HttpServlet {
           duration);
       return;
     }
+    if (!studentRegNumber.matches("\\d+")) {
+      forwardWithError(request, response, "Student ID must be a positive number.",
+          prescriptionIdRaw, visitIdRaw, studentRegNumber, medicineName, diagnosis, dosage,
+          duration);
+      return;
+    }
     if (medicineName == null || medicineName.isBlank()) {
       forwardWithError(request, response, "Medicine name is required.",
           prescriptionIdRaw, visitIdRaw, studentRegNumber, medicineName, diagnosis, dosage,
@@ -150,7 +156,8 @@ public class PrescriptionServlet extends HttpServlet {
             duration);
         return;
       }
-      if (!studentRegNumber.equals(visit.getRegNumber())) {
+      int studentRegNumberValue = Integer.parseInt(studentRegNumber);
+      if (studentRegNumberValue != visit.getRegNumber()) {
         forwardWithError(request, response,
             "Student ID does not match the selected visit.",
             prescriptionIdRaw, visitIdRaw, studentRegNumber, medicineName, diagnosis, dosage,

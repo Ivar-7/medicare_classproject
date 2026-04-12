@@ -31,14 +31,14 @@
             </div>
         </div>
 
-        <c:if test="${not empty history}">
+        <c:if test="${not empty student}">
             <div class="card border-0 shadow-sm" id="historyPrintArea">
                 <div class="card-body p-4 p-md-5">
                     <div class="d-flex justify-content-between align-items-start mb-4">
                         <div>
                             <h5 class="fw-bold mb-1">Student Medical History</h5>
-                            <div class="text-muted small">Generated for: ${history.student.fullName} (${history.student.regNumber})</div>
-                            <div class="text-muted small">Faculty: ${history.student.faculty}</div>
+                            <div class="text-muted small">Generated for: ${student.firstName} ${student.lastName} (${student.regNumber})</div>
+                            <div class="text-muted small">Faculty: ${student.faculty}</div>
                         </div>
                         <button type="button" class="btn btn-outline-secondary" onclick="window.print()">
                             Print Medical History
@@ -47,7 +47,7 @@
 
                     <h6 class="fw-bold mt-4">Visit History</h6>
                     <c:choose>
-                        <c:when test="${empty history.visits}">
+                        <c:when test="${empty visits}">
                             <p class="text-muted small">No visits recorded.</p>
                         </c:when>
                         <c:otherwise>
@@ -62,7 +62,7 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <c:forEach var="v" items="${history.visits}">
+                                        <c:forEach var="v" items="${visits}">
                                             <tr>
                                                 <td>#${v.visitId}</td>
                                                 <td>${v.visitDate}</td>
@@ -78,7 +78,7 @@
 
                     <h6 class="fw-bold mt-4">Prescription History</h6>
                     <c:choose>
-                        <c:when test="${empty history.prescriptions}">
+                        <c:when test="${empty prescriptions}">
                             <p class="text-muted small">No prescriptions recorded.</p>
                         </c:when>
                         <c:otherwise>
@@ -94,7 +94,7 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <c:forEach var="p" items="${history.prescriptions}">
+                                        <c:forEach var="p" items="${prescriptions}">
                                             <tr>
                                                 <td>#${p.prescriptionId}</td>
                                                 <td>#${p.visitId}</td>
@@ -111,7 +111,7 @@
 
                     <h6 class="fw-bold mt-4">Lab / Note History</h6>
                     <c:choose>
-                        <c:when test="${empty history.labHistory}">
+                        <c:when test="${empty labHistory}">
                             <p class="text-muted small">No lab or treatment notes recorded.</p>
                         </c:when>
                         <c:otherwise>
@@ -126,7 +126,7 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <c:forEach var="n" items="${history.labHistory}">
+                                        <c:forEach var="n" items="${labHistory}">
                                             <tr>
                                                 <td>#${n.noteId}</td>
                                                 <td>#${n.visitId}</td>

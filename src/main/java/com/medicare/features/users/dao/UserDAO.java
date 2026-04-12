@@ -8,6 +8,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -18,14 +19,20 @@ public class UserDAO {
         return new User(
             rs.getInt("user_id"),
             rs.getString("username"),
-            rs.getString("password"),
-            rs.getString("full_name"),
-            User.Role.valueOf(rs.getString("role"))
+            rs.getString("password_hash"),
+            rs.getString("first_name"),
+            rs.getString("last_name"),
+            User.Role.valueOf(rs.getString("role")),
+            rs.getString("email"),
+            rs.getString("phone"),
+            rs.getDate("date_of_employment") != null ? rs.getDate("date_of_employment").toLocalDate() : null,
+            rs.getDate("created_at") != null ? rs.getDate("created_at").toLocalDate() : null,
+            rs.getDate("updated_at") != null ? rs.getDate("updated_at").toLocalDate() : null
         );
     }
 
     public List<User> findAll() throws SQLException {
-        String sql = "SELECT * FROM users ORDER BY full_name";
+        String sql = "SELECT * FROM users ORDER BY first_name, last_name";
         List<User> users = new ArrayList<>();
         try (Connection conn = DatabaseConfig.getConnection();
              Statement stmt = conn.createStatement();
@@ -58,7 +65,7 @@ public class UserDAO {
     }
 
     public List<User> findByRole(String role) throws SQLException {
-        String sql = "SELECT * FROM users WHERE role = ? ORDER BY full_name";
+        String sql = "SELECT * FROM users WHERE role = ? ORDER BY first_name, last_name";
         List<User> users = new ArrayList<>();
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -71,35 +78,49 @@ public class UserDAO {
     }
 
     public void save(User user) throws SQLException {
-        String sql = "INSERT INTO users (username, password, full_name, role) VALUES (?,?,?,?)";
+        String sql = "INSERT INTO users (username, password_hash, first_name, last_name, role, email, phone, date_of_employment, created_at, updated_at) " +
+                     "VALUES (?,?,?,?,?,?,?,?,?,?)";
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, user.getUsername());
-            ps.setString(2, user.getPassword());
-            ps.setString(3, user.getFullName());
-            ps.setString(4, user.getRole().name());
+            ps.setString(2, user.getPasswordHash());
+            ps.setString(3, user.getFirstName());
+            ps.setString(4, user.getLastName());
+            ps.setString(5, user.getRole().name());
+            ps.setString(6, user.getEmail());
+            ps.setString(7, user.getPhone());
+            ps.setDate(8, user.getDateOfEmployment() != null ? java.sql.Date.valueOf(user.getDateOfEmployment()) : null);
+            ps.setDate(9, user.getCreatedAt() != null ? java.sql.Date.valueOf(user.getCreatedAt()) : null);
+            ps.setDate(10, user.getUpdatedAt() != null ? java.sql.Date.valueOf(user.getUpdatedAt()) : null);
             ps.executeUpdate();
         }
     }
 
     public void update(User user) throws SQLException {
-        String sql = "UPDATE users SET username=?, full_name=?, role=? WHERE user_id=?";
+        String sql = "UPDATE users SET username=?, password_hash=?, first_name=?, last_name=?, role=?, email=?, phone=?, date_of_employment=?, updated_at=? WHERE user_id=?";
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, user.getUsername());
-            ps.setString(2, user.getFullName());
-            ps.setString(3, user.getRole().name());
-            ps.setInt(4, user.getUserId());
+            ps.setString(2, user.getPasswordHash());
+            ps.setString(3, user.getFirstName());
+            ps.setString(4, user.getLastName());
+            ps.setString(5, user.getRole().name());
+            ps.setString(6, user.getEmail());
+            ps.setString(7, user.getPhone());
+            ps.setDate(8, user.getDateOfEmployment() != null ? java.sql.Date.valueOf(user.getDateOfEmployment()) : null);
+            ps.setDate(9, LocalDate.now() == null ? null : java.sql.Date.valueOf(LocalDate.now()));
+            ps.setInt(10, user.getUserId());
             ps.executeUpdate();
         }
     }
 
     public void updatePassword(int userId, String newHashedPassword) throws SQLException {
-        String sql = "UPDATE users SET password=? WHERE user_id=?";
+        String sql = "UPDATE users SET password_hash=?, updated_at=? WHERE user_id=?";
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, newHashedPassword);
-            ps.setInt(2, userId);
+            ps.setDate(2, java.sql.Date.valueOf(LocalDate.now()));
+            ps.setInt(3, userId);
             ps.executeUpdate();
         }
     }

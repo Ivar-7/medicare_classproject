@@ -7,18 +7,35 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
 public class AuthTokenDAO {
 
     private User mapUser(ResultSet rs) throws SQLException {
+        LocalDate dateOfEmployment = rs.getDate("date_of_employment") == null
+            ? null
+            : rs.getDate("date_of_employment").toLocalDate();
+        LocalDate createdAt = rs.getDate("created_at") == null
+            ? null
+            : rs.getDate("created_at").toLocalDate();
+        LocalDate updatedAt = rs.getDate("updated_at") == null
+            ? null
+            : rs.getDate("updated_at").toLocalDate();
+
         return new User(
             rs.getInt("user_id"),
             rs.getString("username"),
-            rs.getString("password"),
-            rs.getString("full_name"),
-            User.Role.valueOf(rs.getString("role"))
+            rs.getString("password_hash"),
+            rs.getString("first_name"),
+            rs.getString("last_name"),
+            User.Role.valueOf(rs.getString("role")),
+            rs.getString("email"),
+            rs.getString("phone"),
+            dateOfEmployment,
+            createdAt,
+            updatedAt
         );
     }
 
