@@ -90,7 +90,7 @@ public class HomeServlet extends HttpServlet {
 
     private void loadTechnicianDashboard(HttpServletRequest request) throws Exception {
         request.setAttribute("studentCount", studentService.countStudents());
-        request.setAttribute("recentStudents", studentService.getAllStudents());
+        request.setAttribute("recentStudents", studentService.getRecentStudents(10));
         request.setAttribute("notesCount", 0);
         request.setAttribute("technicianUsers", userService.getTechnicians());
     }

@@ -101,6 +101,13 @@ public class LabRequest {
     return status != null ? status.name() : "";
   }
 
+  /**
+   * Convenience method for EL comparisons: ${labRequest.priorityName == 'Routine'}
+   */
+  public String getPriorityName() {
+    return priority != null ? priority.name() : "";
+  }
+
   // ── Setters ──────────────────────────────────────────────────────────────
 
   public void setRequestId(int requestId) {

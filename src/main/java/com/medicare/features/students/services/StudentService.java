@@ -15,6 +15,10 @@ public class StudentService {
     return studentDAO.findAll();
   }
 
+  public List<Student> getRecentStudents(int limit) throws SQLException {
+    return studentDAO.findRecent(limit);
+  }
+
   public Optional<Student> getStudentByRegNumber(int regNumber) throws SQLException {
     return studentDAO.findByRegNumber(regNumber);
   }

@@ -98,6 +98,16 @@
                                     <i class="bi bi-plus-circle me-2"></i>Add Lab Note
                                 </a>
                             </div>
+                            <div class="col-sm-6 col-md-4">
+                                <a href="${pageContext.request.contextPath}/lab/requests" class="btn btn-outline-primary w-100">
+                                    <i class="bi bi-clipboard2-pulse me-2"></i>Lab Requests
+                                </a>
+                            </div>
+                            <div class="col-sm-6 col-md-4">
+                                <a href="${pageContext.request.contextPath}/lab/results" class="btn btn-outline-primary w-100">
+                                    <i class="bi bi-file-earmark-medical me-2"></i>Lab Results
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -109,7 +119,8 @@
             <div class="col-12">
                 <div class="card border-0 shadow-sm">
                     <div class="card-body p-4">
-                        <h5 class="fw-bold mb-3">Student Directory</h5>
+                        <h5 class="fw-bold mb-1">Recent Students</h5>
+                        <p class="text-muted small mb-3">Showing the latest 10 students for quick lab workflows.</p>
                         <c:choose>
                             <c:when test="${empty recentStudents}">
                                 <div class="text-center text-muted py-4">
@@ -128,8 +139,7 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <c:forEach var="student" items="${recentStudents}" varStatus="status">
-                                                <c:if test="${status.count <= 10}">
+                                            <c:forEach var="student" items="${recentStudents}">
                                                 <tr>
                                                     <td class="px-4 fw-medium">${student.regNumber}</td>
                                                     <td>${student.firstName} ${student.lastName}</td>
@@ -141,7 +151,6 @@
                                                         </a>
                                                     </td>
                                                 </tr>
-                                                </c:if>
                                             </c:forEach>
                                         </tbody>
                                     </table>

@@ -132,6 +132,14 @@ public class AuthFilter implements Filter {
             return false;
         }
 
+        // Lab requests/results available to Doctor, Technician, and Admin
+        if ((path.startsWith("/lab/requests") || path.startsWith("/lab/results"))
+            && currentUser.getRole() != User.Role.Doctor
+            && currentUser.getRole() != User.Role.Technician
+            && currentUser.getRole() != User.Role.Admin) {
+            return false;
+        }
+
         // Admin-only paths
         if (path.startsWith("/audit") || path.startsWith("/users")) {
             if (currentUser.getRole() != User.Role.Admin) {

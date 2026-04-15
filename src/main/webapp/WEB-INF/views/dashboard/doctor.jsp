@@ -98,6 +98,16 @@
                                     <i class="bi bi-journal-medical me-2"></i>Clinical Notes
                                 </a>
                             </div>
+                            <div class="col-sm-6 col-md-4">
+                                <a href="${pageContext.request.contextPath}/lab/requests" class="btn btn-outline-primary w-100">
+                                    <i class="bi bi-clipboard2-pulse me-2"></i>Lab Requests
+                                </a>
+                            </div>
+                            <div class="col-sm-6 col-md-4">
+                                <a href="${pageContext.request.contextPath}/lab/results" class="btn btn-outline-primary w-100">
+                                    <i class="bi bi-file-earmark-medical me-2"></i>Lab Results
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -63,6 +63,21 @@ public class StudentDAO {
     return students;
   }
 
+  public List<Student> findRecent(int limit) throws SQLException {
+    String sql = "SELECT * FROM students ORDER BY COALESCE(created_at, '0000-00-00') DESC, reg_number DESC LIMIT ?";
+    List<Student> students = new ArrayList<>();
+    try (Connection conn = DatabaseConfig.getConnection();
+        PreparedStatement ps = conn.prepareStatement(sql)) {
+      ps.setInt(1, Math.max(1, limit));
+      try (ResultSet rs = ps.executeQuery()) {
+        while (rs.next()) {
+          students.add(mapRow(rs));
+        }
+      }
+    }
+    return students;
+  }
+
   public Optional<Student> findByRegNumber(int regNumber) throws SQLException {
     String sql = "SELECT * FROM students WHERE reg_number = ?";
     try (Connection conn = DatabaseConfig.getConnection();

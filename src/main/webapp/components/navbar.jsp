@@ -57,6 +57,16 @@
                 <!-- Notes visible to Doctor and Technician only -->
                 <c:if test="${sessionScope.currentUser.roleName == 'Doctor' || sessionScope.currentUser.roleName == 'Technician'}">
                     <li class="nav-item">
+                        <a class="nav-link rounded px-3" href="${pageContext.request.contextPath}/lab/requests">
+                            <i class="bi bi-clipboard2-pulse me-1"></i>Lab Requests
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link rounded px-3" href="${pageContext.request.contextPath}/lab/results">
+                            <i class="bi bi-file-earmark-medical me-1"></i>Lab Results
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link rounded px-3" href="${pageContext.request.contextPath}/notes">
                             <i class="bi bi-journal-medical me-1"></i>
                             <c:choose>
