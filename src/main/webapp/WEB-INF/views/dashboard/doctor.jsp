@@ -15,6 +15,29 @@
                         <i class="bi bi-stethoscope text-primary me-2"></i>Welcome, Dr. ${sessionScope.currentUser.firstName} ${sessionScope.currentUser.lastName}
                     </h3>
                     <p class="text-muted mb-0">Doctor Dashboard - Manage Patient Visits</p>
+                    <p class="text-muted small mb-0">Your Doctor ID: #${sessionScope.currentUser.userId}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold mb-3">Doctor IDs</h5>
+                        <c:choose>
+                            <c:when test="${empty doctorUsers}">
+                                <p class="text-muted mb-0">No doctors available.</p>
+                            </c:when>
+                            <c:otherwise>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <c:forEach var="doctor" items="${doctorUsers}">
+                                        <span class="badge bg-light text-dark border">#${doctor.userId} - Dr. ${doctor.firstName} ${doctor.lastName}</span>
+                                    </c:forEach>
+                                </div>
+                            </c:otherwise>
+                        </c:choose>
+                    </div>
                 </div>
             </div>
         </div>

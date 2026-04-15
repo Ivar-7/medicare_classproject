@@ -16,10 +16,33 @@
                             <i class="bi bi-house-door text-primary me-2"></i>Welcome, ${sessionScope.currentUser.firstName} ${sessionScope.currentUser.lastName}
                         </h3>
                         <p class="text-muted mb-0">Receptionist Dashboard</p>
+                        <p class="text-muted small mb-0">Your Receptionist ID: #${sessionScope.currentUser.userId}</p>
                     </div>
                     <a href="${pageContext.request.contextPath}/students/new" class="btn btn-primary">
                         <i class="bi bi-person-plus me-1"></i>Register New Student
                     </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold mb-3">Receptionist IDs</h5>
+                        <c:choose>
+                            <c:when test="${empty receptionistUsers}">
+                                <p class="text-muted mb-0">No receptionists available.</p>
+                            </c:when>
+                            <c:otherwise>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <c:forEach var="receptionist" items="${receptionistUsers}">
+                                        <span class="badge bg-light text-dark border">#${receptionist.userId} - ${receptionist.firstName} ${receptionist.lastName}</span>
+                                    </c:forEach>
+                                </div>
+                            </c:otherwise>
+                        </c:choose>
+                    </div>
                 </div>
             </div>
         </div>

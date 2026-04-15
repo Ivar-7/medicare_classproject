@@ -115,49 +115,49 @@ public class PrescriptionServlet extends HttpServlet {
     String prescriptionIdRaw = ServletRequestUtils.trim(request.getParameter("prescriptionId"));
     String studentRegNumber = ServletRequestUtils.trim(request.getParameter("studentRegNumber"));
     String medicineName = ServletRequestUtils.trim(request.getParameter("medicineName"));
-    String diagnosis = ServletRequestUtils.trim(request.getParameter("diagnosis"));
+    String instructions = ServletRequestUtils.trim(request.getParameter("instructions"));
     String dosage = ServletRequestUtils.trim(request.getParameter("dosage"));
     String duration = ServletRequestUtils.trim(request.getParameter("duration"));
 
     if (visitIdRaw == null || !visitIdRaw.matches("\\d+")) {
       forwardWithError(request, response, "Visit ID must be a positive number.",
-          prescriptionIdRaw, visitIdRaw, studentRegNumber, medicineName, diagnosis, dosage,
+          prescriptionIdRaw, visitIdRaw, studentRegNumber, medicineName, instructions, dosage,
           duration);
       return;
     }
     if (studentRegNumber == null || studentRegNumber.isBlank()) {
       forwardWithError(request, response, "Student ID is required.",
-          prescriptionIdRaw, visitIdRaw, studentRegNumber, medicineName, diagnosis, dosage,
+          prescriptionIdRaw, visitIdRaw, studentRegNumber, medicineName, instructions, dosage,
           duration);
       return;
     }
     if (!studentRegNumber.matches("\\d+")) {
       forwardWithError(request, response, "Student ID must be a positive number.",
-          prescriptionIdRaw, visitIdRaw, studentRegNumber, medicineName, diagnosis, dosage,
+          prescriptionIdRaw, visitIdRaw, studentRegNumber, medicineName, instructions, dosage,
           duration);
       return;
     }
     if (medicineName == null || medicineName.isBlank()) {
       forwardWithError(request, response, "Medicine name is required.",
-          prescriptionIdRaw, visitIdRaw, studentRegNumber, medicineName, diagnosis, dosage,
+          prescriptionIdRaw, visitIdRaw, studentRegNumber, medicineName, instructions, dosage,
           duration);
       return;
     }
-    if (diagnosis == null || diagnosis.isBlank()) {
-      forwardWithError(request, response, "Diagnosis is required.",
-          prescriptionIdRaw, visitIdRaw, studentRegNumber, medicineName, diagnosis, dosage,
+    if (instructions == null || instructions.isBlank()) {
+      forwardWithError(request, response, "Instructions are required.",
+          prescriptionIdRaw, visitIdRaw, studentRegNumber, medicineName, instructions, dosage,
           duration);
       return;
     }
     if (dosage == null || dosage.isBlank()) {
       forwardWithError(request, response, "Dosage is required.",
-          prescriptionIdRaw, visitIdRaw, studentRegNumber, medicineName, diagnosis, dosage,
+          prescriptionIdRaw, visitIdRaw, studentRegNumber, medicineName, instructions, dosage,
           duration);
       return;
     }
     if (duration == null || duration.isBlank()) {
       forwardWithError(request, response, "Duration is required.",
-          prescriptionIdRaw, visitIdRaw, studentRegNumber, medicineName, diagnosis, dosage,
+          prescriptionIdRaw, visitIdRaw, studentRegNumber, medicineName, instructions, dosage,
           duration);
       return;
     }
@@ -166,7 +166,7 @@ public class PrescriptionServlet extends HttpServlet {
       int visitId = Integer.parseInt(visitIdRaw);
       if (!visitService.existsVisit(visitId)) {
         forwardWithError(request, response, "Visit ID does not exist.",
-            prescriptionIdRaw, visitIdRaw, studentRegNumber, medicineName, diagnosis, dosage,
+            prescriptionIdRaw, visitIdRaw, studentRegNumber, medicineName, instructions, dosage,
             duration);
         return;
       }
@@ -175,7 +175,7 @@ public class PrescriptionServlet extends HttpServlet {
       if (visitStudentReg == null || studentRegNumberValue != visitStudentReg) {
         forwardWithError(request, response,
             "Student ID does not match the selected visit.",
-            prescriptionIdRaw, visitIdRaw, studentRegNumber, medicineName, diagnosis, dosage,
+          prescriptionIdRaw, visitIdRaw, studentRegNumber, medicineName, instructions, dosage,
             duration);
         return;
       }
@@ -198,7 +198,7 @@ public class PrescriptionServlet extends HttpServlet {
           dosage,
           "",
           duration,
-          "",
+          instructions,
           LocalDate.now(),
           null,
           null);
@@ -233,13 +233,13 @@ public class PrescriptionServlet extends HttpServlet {
         logger.log(Level.SEVERE, "PrescriptionServlet POST error", e);
         forwardWithError(request, response,
           mapPrescriptionSqlError(e),
-          prescriptionIdRaw, visitIdRaw, studentRegNumber, medicineName, diagnosis, dosage,
+          prescriptionIdRaw, visitIdRaw, studentRegNumber, medicineName, instructions, dosage,
           duration);
     } catch (Exception e) {
       logger.log(Level.SEVERE, "PrescriptionServlet POST error", e);
       forwardWithError(request, response,
           "A system error occurred while saving the prescription.",
-          prescriptionIdRaw, visitIdRaw, studentRegNumber, medicineName, diagnosis, dosage,
+          prescriptionIdRaw, visitIdRaw, studentRegNumber, medicineName, instructions, dosage,
           duration);
     }
   }
@@ -251,7 +251,7 @@ public class PrescriptionServlet extends HttpServlet {
       String visitIdRaw,
       String studentRegNumber,
       String medicineName,
-      String diagnosis,
+      String instructions,
       String dosage,
       String duration) throws ServletException, IOException {
     Prescription prescription = new Prescription();
@@ -264,6 +264,10 @@ public class PrescriptionServlet extends HttpServlet {
     prescription.setMedicineName(medicineName);
     prescription.setDosage(dosage);
     prescription.setDuration(duration);
+    prescription.setInstructions(instructions);
+    if (studentRegNumber != null && studentRegNumber.matches("\\d+")) {
+      prescription.setStudentRegNumber(Integer.parseInt(studentRegNumber));
+    }
 
     request.setAttribute("error", errorMessage);
     request.setAttribute("prescription", prescription);

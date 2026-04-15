@@ -15,6 +15,29 @@
                         <i class="bi bi-beaker text-primary me-2"></i>Welcome, ${sessionScope.currentUser.firstName} ${sessionScope.currentUser.lastName}
                     </h3>
                     <p class="text-muted mb-0">Lab Technician Dashboard - Patient Test Notes</p>
+                    <p class="text-muted small mb-0">Your Technician ID: #${sessionScope.currentUser.userId}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold mb-3">Lab Technician IDs</h5>
+                        <c:choose>
+                            <c:when test="${empty technicianUsers}">
+                                <p class="text-muted mb-0">No lab technicians available.</p>
+                            </c:when>
+                            <c:otherwise>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <c:forEach var="technician" items="${technicianUsers}">
+                                        <span class="badge bg-light text-dark border">#${technician.userId} - ${technician.firstName} ${technician.lastName}</span>
+                                    </c:forEach>
+                                </div>
+                            </c:otherwise>
+                        </c:choose>
+                    </div>
                 </div>
             </div>
         </div>

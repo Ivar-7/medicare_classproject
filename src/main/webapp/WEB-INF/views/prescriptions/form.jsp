@@ -44,7 +44,7 @@
                     <div class="col-md-6">
                         <label for="studentRegNumber" class="form-label">Student ID (Reg Number)</label>
                         <input id="studentRegNumber" type="text" name="studentRegNumber" class="form-control"
-                               value="${not empty prescription.studentRegNumber ? prescription.studentRegNumber : studentRegNumber}"
+                               value="${prescription.studentRegNumber gt 0 ? prescription.studentRegNumber : studentRegNumber}"
                                placeholder="e.g. STU-001" required>
                         <div class="form-text">Must match the student linked to the selected visit.</div>
                     </div>
@@ -56,9 +56,9 @@
                     </div>
 
                     <div class="col-md-12">
-                        <label for="diagnosis" class="form-label">Diagnosis</label>
-                        <input id="diagnosis" type="text" name="diagnosis" class="form-control"
-                               value="${prescription.diagnosis}" placeholder="e.g. Malaria" required>
+                           <label for="instructions" class="form-label">Instructions</label>
+                           <input id="instructions" type="text" name="instructions" class="form-control"
+                               value="${prescription.instructions}" placeholder="e.g. Take after meals" required>
                     </div>
 
                     <div class="col-md-6">

@@ -81,6 +81,17 @@ public class SchemaInit {
               "  FOREIGN KEY (visit_id) REFERENCES medical_visits(visit_id)" +
               ")");
 
+            stmt.execute(
+              "CREATE TABLE IF NOT EXISTS treatment_notes (" +
+                "  note_id             INTEGER PRIMARY KEY AUTOINCREMENT," +
+                "  visit_id            INTEGER NOT NULL," +
+                "  clinical_notes      TEXT NOT NULL," +
+                "  follow_up_date      TEXT," +
+                "  created_at          TEXT," +
+                "  updated_at          TEXT," +
+                "  FOREIGN KEY (visit_id) REFERENCES medical_visits(visit_id)" +
+                ")");
+
       stmt.execute(
           "CREATE TABLE IF NOT EXISTS queue (" +
               "  queue_id            INTEGER PRIMARY KEY AUTOINCREMENT," +

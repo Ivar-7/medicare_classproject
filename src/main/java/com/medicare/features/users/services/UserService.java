@@ -80,4 +80,12 @@ public class UserService {
     public List<User> getDoctors() throws SQLException {
         return userDAO.findByRole("Doctor");
     }
+
+    public List<User> getReceptionists() throws SQLException {
+        return userDAO.findByRole("Receptionist");
+    }
+
+    public List<User> getTechnicians() throws SQLException {
+        return userDAO.findByRole("Technician");
+    }
 }

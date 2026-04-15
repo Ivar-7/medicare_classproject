@@ -77,6 +77,7 @@ public class HomeServlet extends HttpServlet {
         request.setAttribute("studentCount", studentService.countStudents());
         request.setAttribute("visitCount", visitService.countAllVisits());
         request.setAttribute("recentVisits", visitService.getRecentVisits(10));
+        request.setAttribute("receptionistUsers", userService.getReceptionists());
     }
 
     private void loadDoctorDashboard(HttpServletRequest request, int doctorId) throws Exception {
@@ -84,11 +85,13 @@ public class HomeServlet extends HttpServlet {
         request.setAttribute("recentVisits", visitService.getVisitsByDoctor(doctorId));
         request.setAttribute("pendingVisitsCount", visitService.countPendingVisitsByDoctor(doctorId));
         request.setAttribute("totalVisitsCount", visitService.countVisitsByDoctor(doctorId));
+        request.setAttribute("doctorUsers", userService.getDoctors());
     }
 
     private void loadTechnicianDashboard(HttpServletRequest request) throws Exception {
         request.setAttribute("studentCount", studentService.countStudents());
         request.setAttribute("recentStudents", studentService.getAllStudents());
         request.setAttribute("notesCount", 0);
+        request.setAttribute("technicianUsers", userService.getTechnicians());
     }
 }
