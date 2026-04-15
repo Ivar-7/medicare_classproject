@@ -19,6 +19,18 @@ public class MedicalVisitService {
     return visitDAO.findById(id);
   }
 
+  public boolean existsVisit(int id) throws SQLException {
+    return visitDAO.existsById(id);
+  }
+
+  public Optional<Integer> getVisitDoctorId(int id) throws SQLException {
+    return visitDAO.findDoctorIdById(id);
+  }
+
+  public Optional<Integer> getVisitStudentRegNumber(int id) throws SQLException {
+    return visitDAO.findStudentRegNumberById(id);
+  }
+
   public List<MedicalVisit> getVisitsByStudent(int regNumber) throws SQLException {
     return visitDAO.findByStudent(regNumber);
   }

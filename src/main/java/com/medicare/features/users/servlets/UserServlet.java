@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.regex.Pattern;
@@ -150,6 +151,12 @@ public class UserServlet extends HttpServlet {
                 return;
             }
 
+            if (email != null && !email.isBlank() && emailTakenForDifferentUser(email, userId)) {
+                forwardWithError(request, response, "Email is already in use.",
+                                 userIdRaw, username, firstName, lastName, email, phone, dateOfEmploymentRaw, roleRaw);
+                return;
+            }
+
             User user = new User();
             user.setUsername(username);
             user.setFirstName(firstName);
@@ -179,6 +186,22 @@ public class UserServlet extends HttpServlet {
 
             ServletRequestUtils.redirectWithMessage(request, response, "/users", "success",
                                                    "User updated successfully.");
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "UserServlet POST save error", e);
+            String sqlMessage = flattenSqlMessage(e).toLowerCase();
+            if (sqlMessage.contains("unique constraint failed: users.email")) {
+                ServletRequestUtils.redirectWithMessage(request, response, "/users", "error",
+                                                       "Email is already in use.");
+            } else if (sqlMessage.contains("unique constraint failed: users.username")) {
+                ServletRequestUtils.redirectWithMessage(request, response, "/users", "error",
+                                                       "Username is already in use.");
+            } else if (sqlMessage.contains("invalid date value in column 'date_of_employment'")) {
+                ServletRequestUtils.redirectWithMessage(request, response, "/users", "error",
+                                                       "One or more users have invalid employment dates. Please correct the data.");
+            } else {
+                ServletRequestUtils.redirectWithMessage(request, response, "/users", "error",
+                                                       "A system error occurred while saving the user.");
+            }
         } catch (Exception e) {
             logger.log(Level.SEVERE, "UserServlet POST save error", e);
             ServletRequestUtils.redirectWithMessage(request, response, "/users", "error",
@@ -259,8 +282,31 @@ public class UserServlet extends HttpServlet {
     }
 
     private boolean usernameTakenForDifferentUser(String username, int currentUserId) throws Exception {
-        return userService.getUserByUsername(username)
-                .map(existingUser -> existingUser.getUserId() != currentUserId)
-                .orElse(false);
+        if (currentUserId <= 0) {
+            return userService.usernameExists(username);
+        }
+        return userService.usernameExistsForOtherUser(username, currentUserId);
+    }
+
+    private boolean emailTakenForDifferentUser(String email, int currentUserId) throws Exception {
+        if (currentUserId <= 0) {
+            return userService.emailExists(email);
+        }
+        return userService.emailExistsForOtherUser(email, currentUserId);
+    }
+
+    private String flattenSqlMessage(SQLException e) {
+        StringBuilder sb = new StringBuilder();
+        SQLException current = e;
+        while (current != null) {
+            if (current.getMessage() != null && !current.getMessage().isBlank()) {
+                if (sb.length() > 0) {
+                    sb.append(" | ");
+                }
+                sb.append(current.getMessage());
+            }
+            current = current.getNextException();
+        }
+        return sb.toString();
     }
 }

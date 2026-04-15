@@ -109,5 +109,17 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        (function () {
+            var dateInput = document.getElementById('dateOfEmployment');
+            if (!dateInput) {
+                return;
+            }
+            var now = new Date();
+            var month = String(now.getMonth() + 1).padStart(2, '0');
+            var day = String(now.getDate()).padStart(2, '0');
+            dateInput.max = now.getFullYear() + '-' + month + '-' + day;
+        })();
+    </script>
 </body>
 </html>

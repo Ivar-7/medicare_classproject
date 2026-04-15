@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -77,10 +78,34 @@ public class LoginServlet extends HttpServlet {
                 request.setAttribute("error", "Invalid username or password.");
                 request.getRequestDispatcher("/WEB-INF/views/auth/login.jsp").forward(request, response);
             }
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "LoginServlet POST error", e);
+            String sqlMessage = flattenSqlMessage(e).toLowerCase();
+            if (sqlMessage.contains("invalid date value in column 'date_of_employment'")) {
+                request.setAttribute("error", "Your account has invalid employment date data. Please contact an administrator.");
+            } else {
+                request.setAttribute("error", "A system error occurred. Please try again.");
+            }
+            request.getRequestDispatcher("/WEB-INF/views/auth/login.jsp").forward(request, response);
         } catch (Exception e) {
             logger.log(Level.SEVERE, "LoginServlet POST error", e);
             request.setAttribute("error", "A system error occurred. Please try again.");
             request.getRequestDispatcher("/WEB-INF/views/auth/login.jsp").forward(request, response);
         }
+    }
+
+    private String flattenSqlMessage(SQLException e) {
+        StringBuilder sb = new StringBuilder();
+        SQLException current = e;
+        while (current != null) {
+            if (current.getMessage() != null && !current.getMessage().isBlank()) {
+                if (sb.length() > 0) {
+                    sb.append(" | ");
+                }
+                sb.append(current.getMessage());
+            }
+            current = current.getNextException();
+        }
+        return sb.toString();
     }
 }

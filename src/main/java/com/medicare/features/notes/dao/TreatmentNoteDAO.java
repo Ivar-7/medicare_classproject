@@ -47,6 +47,31 @@ public class TreatmentNoteDAO {
         }
     }
 
+    public boolean existsById(int id) throws SQLException {
+        String sql = "SELECT 1 FROM treatment_notes WHERE note_id = ?";
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        }
+    }
+
+    public Optional<Integer> findVisitIdByNoteId(int id) throws SQLException {
+        String sql = "SELECT visit_id FROM treatment_notes WHERE note_id = ?";
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return Optional.of(rs.getInt("visit_id"));
+                }
+                return Optional.empty();
+            }
+        }
+    }
+
     public List<TreatmentNote> findByVisit(int visitId) throws SQLException {
         String sql = "SELECT * FROM treatment_notes WHERE visit_id = ? ORDER BY note_id";
         List<TreatmentNote> list = new ArrayList<>();

@@ -8,7 +8,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,6 +40,21 @@ public class UserDAO {
             try {
                 return LocalDate.parse(raw.substring(0, 10));
             } catch (DateTimeParseException ignored) {
+                // Fall through to strict error below.
+            }
+        }
+
+        // Accept epoch timestamps stored as numeric text (seconds or milliseconds).
+        if (raw.chars().allMatch(ch -> Character.isDigit(ch) || ch == '-')) {
+            try {
+                long epoch = Long.parseLong(raw);
+                if (Math.abs(epoch) < 100000000000L) {
+                    epoch *= 1000L;
+                }
+                return Instant.ofEpochMilli(epoch)
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDate();
+            } catch (NumberFormatException ignored) {
                 // Fall through to strict error below.
             }
         }
@@ -116,6 +133,63 @@ public class UserDAO {
             ps.setString(1, email);
             try (ResultSet rs = ps.executeQuery()) {
                 return rs.next() ? Optional.of(mapRow(rs)) : Optional.empty();
+            }
+        }
+    }
+
+    public boolean existsByUsername(String username) throws SQLException {
+        String sql = "SELECT 1 FROM users WHERE username = ? LIMIT 1";
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, username);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        }
+    }
+
+    public boolean existsByEmail(String email) throws SQLException {
+        String sql = "SELECT 1 FROM users WHERE email = ? LIMIT 1";
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, email);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        }
+    }
+
+    public boolean existsByUsernameForOtherUser(String username, int userId) throws SQLException {
+        String sql = "SELECT 1 FROM users WHERE username = ? AND user_id <> ? LIMIT 1";
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, username);
+            ps.setInt(2, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        }
+    }
+
+    public boolean existsByEmailForOtherUser(String email, int userId) throws SQLException {
+        String sql = "SELECT 1 FROM users WHERE email = ? AND user_id <> ? LIMIT 1";
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, email);
+            ps.setInt(2, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        }
+    }
+
+    public boolean existsDoctorById(int userId) throws SQLException {
+        String sql = "SELECT 1 FROM users WHERE user_id = ? AND role = 'Doctor' LIMIT 1";
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
             }
         }
     }

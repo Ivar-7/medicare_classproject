@@ -57,9 +57,10 @@
 
                     <div class="col-md-6">
                         <label for="completed" class="form-label">Visit Status</label>
+                        <c:set var="visitCompleted" value="${visit.statusName eq 'Completed'}" />
                         <select id="completed" name="completed" class="form-select" required>
-                            <option value="false" ${visit.completed ? '' : 'selected'}>Pending</option>
-                            <option value="true" ${visit.completed ? 'selected' : ''}>Completed</option>
+                            <option value="false" ${visitCompleted ? '' : 'selected'}>Pending</option>
+                            <option value="true" ${visitCompleted ? 'selected' : ''}>Completed</option>
                         </select>
                         <div class="form-text">Completed visits are removed from doctor pending visits on dashboard.</div>
                     </div>

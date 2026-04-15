@@ -1,6 +1,7 @@
 package com.medicare.features.notes.servlets;
 
 import com.medicare.features.notes.services.TreatmentNoteService;
+import com.medicare.features.visits.services.MedicalVisitService;
 import com.medicare.models.TreatmentNote;
 import com.medicare.shared.utils.ServletRequestUtils;
 
@@ -10,6 +11,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.logging.Level;
@@ -21,6 +23,7 @@ public class NoteServlet extends HttpServlet {
     private static final Logger logger = Logger.getLogger(NoteServlet.class.getName());
 
     private final TreatmentNoteService noteService = new TreatmentNoteService();
+    private final MedicalVisitService visitService = new MedicalVisitService();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -43,6 +46,15 @@ public class NoteServlet extends HttpServlet {
                 request.setAttribute("note", note);
                 request.getRequestDispatcher("/WEB-INF/views/notes/form.jsp").forward(request, response);
             }
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "NoteServlet GET error", e);
+            if (pathInfo == null || pathInfo.equals("/")) {
+                request.setAttribute("error", mapNoteSqlError(e));
+                request.setAttribute("notes", java.util.Collections.emptyList());
+                request.getRequestDispatcher("/WEB-INF/views/notes/list.jsp").forward(request, response);
+                return;
+            }
+            ServletRequestUtils.redirectWithMessage(request, response, "/notes", "error", mapNoteSqlError(e));
         } catch (NumberFormatException e) {
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
         } catch (Exception e) {
@@ -87,6 +99,20 @@ public class NoteServlet extends HttpServlet {
             return;
         }
 
+        try {
+            if (!visitService.existsVisit(visitId)) {
+                forwardWithError(request, response, "Visit ID does not exist.",
+                                 noteIdRaw, visitIdRaw, clinicalNotes, followUpDateRaw);
+                return;
+            }
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "NoteServlet visit lookup error", e);
+            forwardWithError(request, response,
+                             "Unable to validate visit due to a database issue. Please try again.",
+                             noteIdRaw, visitIdRaw, clinicalNotes, followUpDateRaw);
+            return;
+        }
+
         LocalDate followUpDate = null;
         if (followUpDateRaw != null && !followUpDateRaw.isBlank()) {
             try {
@@ -112,12 +138,21 @@ public class NoteServlet extends HttpServlet {
             }
 
             int noteId = Integer.parseInt(noteIdRaw);
+            if (!noteService.noteExists(noteId)) {
+                ServletRequestUtils.redirectWithMessage(request, response, "/notes", "error",
+                                                       "Treatment note was not found.");
+                return;
+            }
             note.setNoteId(noteId);
             noteService.updateNote(note);
             ServletRequestUtils.redirectWithMessage(request, response, "/notes", "success",
                                                    "Treatment note updated successfully.");
         } catch (NumberFormatException e) {
             forwardWithError(request, response, "Invalid note ID.",
+                             noteIdRaw, visitIdRaw, clinicalNotes, followUpDateRaw);
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "NoteServlet POST save error", e);
+            forwardWithError(request, response, mapNoteSqlError(e),
                              noteIdRaw, visitIdRaw, clinicalNotes, followUpDateRaw);
         } catch (Exception e) {
             logger.log(Level.SEVERE, "NoteServlet POST save error", e);
@@ -137,11 +172,20 @@ public class NoteServlet extends HttpServlet {
 
         try {
             int noteId = Integer.parseInt(noteIdRaw);
+            if (!noteService.noteExists(noteId)) {
+                ServletRequestUtils.redirectWithMessage(request, response, "/notes", "error",
+                                                       "Treatment note was not found.");
+                return;
+            }
             noteService.deleteNote(noteId);
             ServletRequestUtils.redirectWithMessage(request, response, "/notes", "success",
                                                    "Treatment note deleted successfully.");
         } catch (NumberFormatException e) {
             ServletRequestUtils.redirectWithMessage(request, response, "/notes", "error", "Invalid note ID.");
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "NoteServlet POST delete error", e);
+            ServletRequestUtils.redirectWithMessage(request, response, "/notes", "error",
+                                                   mapNoteSqlError(e));
         } catch (Exception e) {
             logger.log(Level.SEVERE, "NoteServlet POST delete error", e);
             ServletRequestUtils.redirectWithMessage(request, response, "/notes", "error",
@@ -187,5 +231,36 @@ public class NoteServlet extends HttpServlet {
         request.setAttribute("error", errorMessage);
         request.setAttribute("note", note);
         request.getRequestDispatcher("/WEB-INF/views/notes/form.jsp").forward(request, response);
+    }
+
+    private String mapNoteSqlError(SQLException e) {
+        String sqlMessage = flattenSqlMessage(e).toLowerCase();
+        if (sqlMessage.contains("foreign key constraint failed")) {
+            return "Treatment note references an invalid visit. Please verify visit information.";
+        }
+        if (sqlMessage.contains("not null constraint failed")) {
+            return "Some required treatment note fields are missing. Please complete all required fields.";
+        }
+        if (sqlMessage.contains("invalid date value in column 'follow_up_date'")
+            || sqlMessage.contains("invalid date value in column 'created_at'")
+            || sqlMessage.contains("invalid date value in column 'updated_at'")) {
+            return "Treatment note data contains invalid dates. Please contact an administrator.";
+        }
+        return "A database error occurred while processing the treatment note.";
+    }
+
+    private String flattenSqlMessage(SQLException e) {
+        StringBuilder sb = new StringBuilder();
+        SQLException current = e;
+        while (current != null) {
+            if (current.getMessage() != null && !current.getMessage().isBlank()) {
+                if (sb.length() > 0) {
+                    sb.append(" | ");
+                }
+                sb.append(current.getMessage());
+            }
+            current = current.getNextException();
+        }
+        return sb.toString();
     }
 }

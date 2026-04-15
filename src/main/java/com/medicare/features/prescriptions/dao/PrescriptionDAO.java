@@ -58,6 +58,28 @@ public class PrescriptionDAO {
     }
   }
 
+  public boolean existsById(int id) throws SQLException {
+    String sql = "SELECT 1 FROM prescriptions WHERE prescription_id = ? LIMIT 1";
+    try (Connection conn = DatabaseConfig.getConnection();
+        PreparedStatement ps = conn.prepareStatement(sql)) {
+      ps.setInt(1, id);
+      try (ResultSet rs = ps.executeQuery()) {
+        return rs.next();
+      }
+    }
+  }
+
+  public Optional<Integer> findVisitIdByPrescriptionId(int id) throws SQLException {
+    String sql = "SELECT visit_id FROM prescriptions WHERE prescription_id = ?";
+    try (Connection conn = DatabaseConfig.getConnection();
+        PreparedStatement ps = conn.prepareStatement(sql)) {
+      ps.setInt(1, id);
+      try (ResultSet rs = ps.executeQuery()) {
+        return rs.next() ? Optional.of(rs.getInt("visit_id")) : Optional.empty();
+      }
+    }
+  }
+
   public List<Prescription> findByVisit(int visitId) throws SQLException {
     String sql = SELECT_WITH_VISIT + "WHERE p.visit_id = ? ORDER BY p.prescription_id";
     List<Prescription> list = new ArrayList<>();
@@ -117,7 +139,6 @@ public class PrescriptionDAO {
       ps.setString(7, p.getPrescribedDate() != null ? p.getPrescribedDate().toString() : LocalDate.now().toString());
       ps.setString(8, LocalDate.now().toString());
       ps.setInt(9, p.getPrescriptionId());
-      ps.setInt(6, p.getPrescriptionId());
       ps.executeUpdate();
     }
   }

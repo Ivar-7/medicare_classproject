@@ -19,6 +19,14 @@ public class TreatmentNoteService {
         return noteDAO.findById(id);
     }
 
+    public boolean noteExists(int id) throws SQLException {
+        return noteDAO.existsById(id);
+    }
+
+    public Optional<Integer> getNoteVisitId(int id) throws SQLException {
+        return noteDAO.findVisitIdByNoteId(id);
+    }
+
     public List<TreatmentNote> getNotesByVisit(int visitId) throws SQLException {
         return noteDAO.findByVisit(visitId);
     }

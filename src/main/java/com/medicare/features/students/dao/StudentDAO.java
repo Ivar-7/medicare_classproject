@@ -15,6 +15,26 @@ import java.util.Optional;
 
 public class StudentDAO {
 
+  private boolean hasColumn(Connection conn, String table, String column) throws SQLException {
+    String sql = "PRAGMA table_info(" + table + ")";
+    try (Statement stmt = conn.createStatement();
+        ResultSet rs = stmt.executeQuery(sql)) {
+      while (rs.next()) {
+        if (column.equalsIgnoreCase(rs.getString("name"))) {
+          return true;
+        }
+      }
+      return false;
+    }
+  }
+
+  private String buildFullName(String firstName, String lastName) {
+    String first = firstName == null ? "" : firstName.trim();
+    String last = lastName == null ? "" : lastName.trim();
+    String fullName = (first + " " + last).trim();
+    return fullName.isEmpty() ? "Unknown Student" : fullName;
+  }
+
   private Student mapRow(ResultSet rs) throws SQLException {
     String dobStr = rs.getString("dob");
     return new Student(
@@ -54,6 +74,40 @@ public class StudentDAO {
     }
   }
 
+  public boolean existsByRegNumber(int regNumber) throws SQLException {
+    String sql = "SELECT 1 FROM students WHERE reg_number = ? LIMIT 1";
+    try (Connection conn = DatabaseConfig.getConnection();
+        PreparedStatement ps = conn.prepareStatement(sql)) {
+      ps.setInt(1, regNumber);
+      try (ResultSet rs = ps.executeQuery()) {
+        return rs.next();
+      }
+    }
+  }
+
+  public boolean existsByEmail(String email) throws SQLException {
+    String sql = "SELECT 1 FROM students WHERE email = ? LIMIT 1";
+    try (Connection conn = DatabaseConfig.getConnection();
+        PreparedStatement ps = conn.prepareStatement(sql)) {
+      ps.setString(1, email);
+      try (ResultSet rs = ps.executeQuery()) {
+        return rs.next();
+      }
+    }
+  }
+
+  public boolean existsByEmailForOtherStudent(String email, int regNumber) throws SQLException {
+    String sql = "SELECT 1 FROM students WHERE email = ? AND reg_number <> ? LIMIT 1";
+    try (Connection conn = DatabaseConfig.getConnection();
+        PreparedStatement ps = conn.prepareStatement(sql)) {
+      ps.setString(1, email);
+      ps.setInt(2, regNumber);
+      try (ResultSet rs = ps.executeQuery()) {
+        return rs.next();
+      }
+    }
+  }
+
   public List<Student> search(String query) throws SQLException {
     String sql = "SELECT * FROM students WHERE first_name LIKE ? OR last_name LIKE ? OR reg_number LIKE ? ORDER BY first_name, last_name";
     String term = "%" + query + "%";
@@ -72,39 +126,57 @@ public class StudentDAO {
   }
 
   public void save(Student student) throws SQLException {
-    String sql = "INSERT INTO students (reg_number, first_name, last_name, dob, faculty, email, phone, address, emergency_contact, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)";
-    try (Connection conn = DatabaseConfig.getConnection();
-        PreparedStatement ps = conn.prepareStatement(sql)) {
-      ps.setInt(1, student.getRegNumber());
-      ps.setString(2, student.getFirstName());
-      ps.setString(3, student.getLastName());
-      ps.setString(4, student.getDob() != null ? student.getDob().toString() : null);
-      ps.setString(5, student.getFaculty());
-      ps.setString(6, student.getEmail());
-      ps.setString(7, student.getPhone());
-      ps.setString(8, student.getAddress());
-      ps.setString(9, student.getEmergencyContact());
-      ps.setString(10, LocalDate.now().toString());
-      ps.setString(11, LocalDate.now().toString());
+    try (Connection conn = DatabaseConfig.getConnection()) {
+      boolean hasLegacyFullName = hasColumn(conn, "students", "full_name");
+      String sql = hasLegacyFullName
+          ? "INSERT INTO students (reg_number, first_name, last_name, full_name, dob, faculty, email, phone, address, emergency_contact, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)"
+          : "INSERT INTO students (reg_number, first_name, last_name, dob, faculty, email, phone, address, emergency_contact, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)";
+
+      try (PreparedStatement ps = conn.prepareStatement(sql)) {
+      int idx = 1;
+      ps.setInt(idx++, student.getRegNumber());
+      ps.setString(idx++, student.getFirstName());
+      ps.setString(idx++, student.getLastName());
+      if (hasLegacyFullName) {
+        ps.setString(idx++, buildFullName(student.getFirstName(), student.getLastName()));
+      }
+      ps.setString(idx++, student.getDob() != null ? student.getDob().toString() : null);
+      ps.setString(idx++, student.getFaculty());
+      ps.setString(idx++, student.getEmail());
+      ps.setString(idx++, student.getPhone());
+      ps.setString(idx++, student.getAddress());
+      ps.setString(idx++, student.getEmergencyContact());
+      ps.setString(idx++, LocalDate.now().toString());
+      ps.setString(idx, LocalDate.now().toString());
       ps.executeUpdate();
+      }
     }
   }
 
   public void update(Student student) throws SQLException {
-    String sql = "UPDATE students SET first_name=?, last_name=?, dob=?, faculty=?, email=?, phone=?, address=?, emergency_contact=?, updated_at=? WHERE reg_number=?";
-    try (Connection conn = DatabaseConfig.getConnection();
-        PreparedStatement ps = conn.prepareStatement(sql)) {
-      ps.setString(1, student.getFirstName());
-      ps.setString(2, student.getLastName());
-      ps.setString(3, student.getDob() != null ? student.getDob().toString() : null);
-      ps.setString(4, student.getFaculty());
-      ps.setString(5, student.getEmail());
-      ps.setString(6, student.getPhone());
-      ps.setString(7, student.getAddress());
-      ps.setString(8, student.getEmergencyContact());
-      ps.setString(9, LocalDate.now().toString());
-      ps.setInt(10, student.getRegNumber());
+    try (Connection conn = DatabaseConfig.getConnection()) {
+      boolean hasLegacyFullName = hasColumn(conn, "students", "full_name");
+      String sql = hasLegacyFullName
+          ? "UPDATE students SET first_name=?, last_name=?, full_name=?, dob=?, faculty=?, email=?, phone=?, address=?, emergency_contact=?, updated_at=? WHERE reg_number=?"
+          : "UPDATE students SET first_name=?, last_name=?, dob=?, faculty=?, email=?, phone=?, address=?, emergency_contact=?, updated_at=? WHERE reg_number=?";
+
+      try (PreparedStatement ps = conn.prepareStatement(sql)) {
+      int idx = 1;
+      ps.setString(idx++, student.getFirstName());
+      ps.setString(idx++, student.getLastName());
+      if (hasLegacyFullName) {
+        ps.setString(idx++, buildFullName(student.getFirstName(), student.getLastName()));
+      }
+      ps.setString(idx++, student.getDob() != null ? student.getDob().toString() : null);
+      ps.setString(idx++, student.getFaculty());
+      ps.setString(idx++, student.getEmail());
+      ps.setString(idx++, student.getPhone());
+      ps.setString(idx++, student.getAddress());
+      ps.setString(idx++, student.getEmergencyContact());
+      ps.setString(idx++, LocalDate.now().toString());
+      ps.setInt(idx, student.getRegNumber());
       ps.executeUpdate();
+      }
     }
   }
 

@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.regex.Pattern;
@@ -150,12 +151,20 @@ public class StudentServlet extends HttpServlet {
 
     try {
       if (isCreate) {
-        if (studentService.getStudentByRegNumber(regNumber).isPresent()) {
+        if (studentService.regNumberExists(regNumber)) {
           forwardWithError(request, response, "Registration number already exists.",
               originalRegNumber, regNumberRaw, firstName, lastName, dobRaw, faculty, email, phone, address,
               emergencyContact);
           return;
         }
+
+        if (email != null && !email.isBlank() && studentService.emailExists(email)) {
+          forwardWithError(request, response, "Email is already in use.",
+              originalRegNumber, regNumberRaw, firstName, lastName, dobRaw, faculty, email, phone, address,
+              emergencyContact);
+          return;
+        }
+
         studentService.createStudent(student);
         ServletRequestUtils.redirectWithMessage(request, response, "/students", "success",
             "Student registered successfully.");
@@ -169,9 +178,45 @@ public class StudentServlet extends HttpServlet {
         return;
       }
 
+      if (email != null && !email.isBlank() && studentService.emailExistsForOtherStudent(email, regNumber)) {
+        forwardWithError(request, response, "Email is already in use.",
+            originalRegNumber, regNumberRaw, firstName, lastName, dobRaw, faculty, email, phone, address,
+            emergencyContact);
+        return;
+      }
+
       studentService.updateStudent(student);
       ServletRequestUtils.redirectWithMessage(request, response, "/students", "success",
           "Student updated successfully.");
+    } catch (SQLException e) {
+      logger.log(Level.SEVERE, "StudentServlet POST save error", e);
+      String sqlMessage = flattenSqlMessage(e).toLowerCase();
+
+      if (sqlMessage.contains("unique constraint failed: students.reg_number")) {
+        forwardWithError(request, response, "Registration number already exists.",
+            originalRegNumber, regNumberRaw, firstName, lastName, dobRaw, faculty, email, phone, address,
+            emergencyContact);
+        return;
+      }
+
+      if (sqlMessage.contains("unique constraint failed: students.email")) {
+        forwardWithError(request, response, "Email is already in use.",
+            originalRegNumber, regNumberRaw, firstName, lastName, dobRaw, faculty, email, phone, address,
+            emergencyContact);
+        return;
+      }
+
+      if (sqlMessage.contains("not null constraint failed: students.full_name")) {
+        forwardWithError(request, response,
+            "Student data schema mismatch detected. Full name is required in the current database table; generated value was not accepted.",
+            originalRegNumber, regNumberRaw, firstName, lastName, dobRaw, faculty, email, phone, address,
+            emergencyContact);
+        return;
+      }
+
+      forwardWithError(request, response, "A database error occurred while saving the student.",
+          originalRegNumber, regNumberRaw, firstName, lastName, dobRaw, faculty, email, phone, address,
+          emergencyContact);
     } catch (Exception e) {
       logger.log(Level.SEVERE, "StudentServlet POST save error", e);
       ServletRequestUtils.redirectWithMessage(request, response, "/students", "error",
@@ -236,5 +281,20 @@ public class StudentServlet extends HttpServlet {
     request.setAttribute("student", student);
     request.setAttribute("originalRegNumber", originalRegNumber);
     request.getRequestDispatcher("/WEB-INF/views/students/form.jsp").forward(request, response);
+  }
+
+  private String flattenSqlMessage(SQLException e) {
+    StringBuilder sb = new StringBuilder();
+    SQLException current = e;
+    while (current != null) {
+      if (current.getMessage() != null && !current.getMessage().isBlank()) {
+        if (sb.length() > 0) {
+          sb.append(" | ");
+        }
+        sb.append(current.getMessage());
+      }
+      current = current.getNextException();
+    }
+    return sb.toString();
   }
 }

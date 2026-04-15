@@ -28,6 +28,26 @@ public class UserService {
         return userDAO.findByEmail(email);
     }
 
+    public boolean usernameExists(String username) throws SQLException {
+        return userDAO.existsByUsername(username);
+    }
+
+    public boolean emailExists(String email) throws SQLException {
+        return userDAO.existsByEmail(email);
+    }
+
+    public boolean usernameExistsForOtherUser(String username, int userId) throws SQLException {
+        return userDAO.existsByUsernameForOtherUser(username, userId);
+    }
+
+    public boolean emailExistsForOtherUser(String email, int userId) throws SQLException {
+        return userDAO.existsByEmailForOtherUser(email, userId);
+    }
+
+    public boolean doctorExists(int userId) throws SQLException {
+        return userDAO.existsDoctorById(userId);
+    }
+
     public Optional<User> authenticate(String username, String password) throws SQLException {
         Optional<User> user = userDAO.findByUsername(username);
         if (user.isPresent() && PasswordUtils.verify(password, user.get().getPasswordHash())) {

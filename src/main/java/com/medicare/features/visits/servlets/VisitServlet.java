@@ -9,6 +9,7 @@ import com.medicare.shared.utils.ServletRequestUtils;
 
 import javax.servlet.ServletException;
 import java.time.LocalDate;
+import java.sql.SQLException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -61,6 +62,15 @@ public class VisitServlet extends HttpServlet {
         loadFormLookups(request);
         request.getRequestDispatcher("/WEB-INF/views/visits/form.jsp").forward(request, response);
       }
+    } catch (SQLException e) {
+      logger.log(Level.SEVERE, "VisitServlet GET error", e);
+      if (pathInfo == null || pathInfo.equals("/")) {
+        request.setAttribute("error", mapVisitSqlError(e));
+        request.setAttribute("visits", java.util.Collections.emptyList());
+        request.getRequestDispatcher("/WEB-INF/views/visits/list.jsp").forward(request, response);
+        return;
+      }
+      ServletRequestUtils.redirectWithMessage(request, response, "/visits", "error", mapVisitSqlError(e));
     } catch (NumberFormatException e) {
       response.sendError(HttpServletResponse.SC_NOT_FOUND);
     } catch (Exception e) {
@@ -108,12 +118,18 @@ public class VisitServlet extends HttpServlet {
     }
 
     try {
-      if (studentService.getStudentByRegNumber(regNumber).isEmpty()) {
+      if (!studentService.regNumberExists(regNumber)) {
         forwardWithError(request, response,
             "Cannot record visit: the student registration number does not exist.",
             visitIdRaw, regNumber, doctorIdRaw, symptoms);
         return;
       }
+    } catch (SQLException e) {
+      logger.log(Level.SEVERE, "VisitServlet student lookup error", e);
+      forwardWithError(request, response,
+          "Unable to validate student registration due to a database issue. Please try again.",
+          visitIdRaw, regNumber, doctorIdRaw, symptoms);
+      return;
     } catch (Exception e) {
       logger.log(Level.SEVERE, "VisitServlet student lookup error", e);
       forwardWithError(request, response,
@@ -134,8 +150,7 @@ public class VisitServlet extends HttpServlet {
     }
 
     try {
-      User doctor = userService.getUserById(doctorId).orElse(null);
-      if (doctor == null || doctor.getRole() != User.Role.Doctor) {
+      if (!userService.doctorExists(doctorId)) {
         forwardWithError(request, response,
             "Selected doctor ID is invalid. Please choose an existing doctor.",
             visitIdRaw, regNumber, doctorIdRaw, symptoms);
@@ -149,6 +164,12 @@ public class VisitServlet extends HttpServlet {
             visitIdRaw, regNumber, doctorIdRaw, symptoms);
         return;
       }
+    } catch (SQLException e) {
+      logger.log(Level.SEVERE, "VisitServlet doctor lookup error", e);
+      forwardWithError(request, response,
+          "Unable to validate doctor information due to a database issue. Please try again.",
+          visitIdRaw, regNumber, doctorIdRaw, symptoms);
+      return;
     } catch (Exception e) {
       logger.log(Level.SEVERE, "VisitServlet doctor lookup error", e);
       forwardWithError(request, response,
@@ -180,15 +201,17 @@ public class VisitServlet extends HttpServlet {
       }
 
       int visitId = Integer.parseInt(visitIdRaw);
-      MedicalVisit existingVisit = visitService.getVisitById(visitId).orElse(null);
-      if (existingVisit == null) {
+      if (!visitService.existsVisit(visitId)) {
         ServletRequestUtils.redirectWithMessage(request, response, "/visits", "error",
             "Visit record was not found.");
         return;
       }
+
+      Integer existingDoctorId = visitService.getVisitDoctorId(visitId).orElse(null);
       if (currentUser != null
           && currentUser.getRole() == User.Role.Doctor
-          && existingVisit.getDoctorId() != currentUser.getUserId()) {
+          && existingDoctorId != null
+          && existingDoctorId != currentUser.getUserId()) {
         ServletRequestUtils.redirectWithMessage(request, response, "/visits", "error",
             "You cannot edit another doctor's visit.");
         return;
@@ -199,6 +222,10 @@ public class VisitServlet extends HttpServlet {
           "Medical visit updated successfully.");
     } catch (NumberFormatException e) {
       forwardWithError(request, response, "Invalid visit ID.", visitIdRaw, regNumber, doctorIdRaw,
+          symptoms);
+    } catch (SQLException e) {
+      logger.log(Level.SEVERE, "VisitServlet POST save error", e);
+      forwardWithError(request, response, mapVisitSqlError(e), visitIdRaw, regNumber, doctorIdRaw,
           symptoms);
     } catch (Exception e) {
       logger.log(Level.SEVERE, "VisitServlet POST save error", e);
@@ -218,15 +245,17 @@ public class VisitServlet extends HttpServlet {
 
     try {
       int visitId = Integer.parseInt(visitIdRaw);
-      MedicalVisit existingVisit = visitService.getVisitById(visitId).orElse(null);
-      if (existingVisit == null) {
+      if (!visitService.existsVisit(visitId)) {
         ServletRequestUtils.redirectWithMessage(request, response, "/visits", "error",
             "Visit record was not found.");
         return;
       }
+
+      Integer existingDoctorId = visitService.getVisitDoctorId(visitId).orElse(null);
       if (currentUser != null
           && currentUser.getRole() == User.Role.Doctor
-          && existingVisit.getDoctorId() != currentUser.getUserId()) {
+          && existingDoctorId != null
+          && existingDoctorId != currentUser.getUserId()) {
         ServletRequestUtils.redirectWithMessage(request, response, "/visits", "error",
             "You cannot delete another doctor's visit.");
         return;
@@ -236,6 +265,9 @@ public class VisitServlet extends HttpServlet {
           "Medical visit deleted successfully.");
     } catch (NumberFormatException e) {
       ServletRequestUtils.redirectWithMessage(request, response, "/visits", "error", "Invalid visit ID.");
+    } catch (SQLException e) {
+      logger.log(Level.SEVERE, "VisitServlet POST delete error", e);
+      ServletRequestUtils.redirectWithMessage(request, response, "/visits", "error", mapVisitSqlError(e));
     } catch (Exception e) {
       logger.log(Level.SEVERE, "VisitServlet POST delete error", e);
       ServletRequestUtils.redirectWithMessage(request, response, "/visits", "error",
@@ -285,6 +317,37 @@ public class VisitServlet extends HttpServlet {
       request.setAttribute("warning", "Some lookup data could not be loaded.");
     }
     request.getRequestDispatcher("/WEB-INF/views/visits/form.jsp").forward(request, response);
+  }
+
+  private String mapVisitSqlError(SQLException e) {
+    String sqlMessage = flattenSqlMessage(e).toLowerCase();
+    if (sqlMessage.contains("foreign key constraint failed")) {
+      return "Student or doctor reference is invalid. Please verify your selected records.";
+    }
+    if (sqlMessage.contains("not null constraint failed")) {
+      return "Some required visit fields are missing. Please complete all required fields.";
+    }
+    if (sqlMessage.contains("invalid date value in column 'visit_date'")
+        || sqlMessage.contains("invalid date value in column 'created_at'")
+        || sqlMessage.contains("invalid date value in column 'updated_at'")) {
+      return "Visit data contains invalid dates. Please contact an administrator.";
+    }
+    return "A database error occurred while processing the visit.";
+  }
+
+  private String flattenSqlMessage(SQLException e) {
+    StringBuilder sb = new StringBuilder();
+    SQLException current = e;
+    while (current != null) {
+      if (current.getMessage() != null && !current.getMessage().isBlank()) {
+        if (sb.length() > 0) {
+          sb.append(" | ");
+        }
+        sb.append(current.getMessage());
+      }
+      current = current.getNextException();
+    }
+    return sb.toString();
   }
 
   private void loadFormLookups(HttpServletRequest request) throws Exception {

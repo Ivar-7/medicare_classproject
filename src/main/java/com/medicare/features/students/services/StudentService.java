@@ -19,6 +19,18 @@ public class StudentService {
     return studentDAO.findByRegNumber(regNumber);
   }
 
+  public boolean regNumberExists(int regNumber) throws SQLException {
+    return studentDAO.existsByRegNumber(regNumber);
+  }
+
+  public boolean emailExists(String email) throws SQLException {
+    return studentDAO.existsByEmail(email);
+  }
+
+  public boolean emailExistsForOtherStudent(String email, int regNumber) throws SQLException {
+    return studentDAO.existsByEmailForOtherStudent(email, regNumber);
+  }
+
   public List<Student> searchStudents(String query) throws SQLException {
     return studentDAO.search(query);
   }

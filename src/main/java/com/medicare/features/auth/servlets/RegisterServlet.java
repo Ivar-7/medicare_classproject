@@ -170,10 +170,10 @@ public class RegisterServlet extends HttpServlet {
     }
 
     try {
-      boolean usernameTaken = userService.getUserByUsername(username).isPresent();
+      boolean usernameTaken = userService.usernameExists(username);
       boolean emailTaken = email != null
           && !email.isBlank()
-          && userService.getUserByEmail(email).isPresent();
+          && userService.emailExists(email);
 
       if (usernameTaken) {
         request.setAttribute("error", "Username is already in use.");
@@ -212,11 +212,13 @@ public class RegisterServlet extends HttpServlet {
 
     } catch (SQLException e) {
       logger.log(Level.SEVERE, "RegisterServlet POST error", e);
-      String sqlMessage = e.getMessage() != null ? e.getMessage().toLowerCase() : "";
+      String sqlMessage = flattenSqlMessage(e).toLowerCase();
       if (sqlMessage.contains("unique constraint failed: users.email")) {
         request.setAttribute("error", "Email is already in use.");
       } else if (sqlMessage.contains("unique constraint failed: users.username")) {
         request.setAttribute("error", "Username is already in use.");
+      } else if (sqlMessage.contains("invalid date value in column 'date_of_employment'")) {
+        request.setAttribute("error", "An existing user has an invalid employment date. Please contact an admin to correct user data.");
       } else {
         request.setAttribute("error", "A system error occurred during registration. Please try again.");
       }
@@ -226,5 +228,20 @@ public class RegisterServlet extends HttpServlet {
       request.setAttribute("error", "A system error occurred during registration. Please try again.");
       request.getRequestDispatcher("/WEB-INF/views/auth/register.jsp").forward(request, response);
     }
+  }
+
+  private String flattenSqlMessage(SQLException e) {
+    StringBuilder sb = new StringBuilder();
+    SQLException current = e;
+    while (current != null) {
+      if (current.getMessage() != null && !current.getMessage().isBlank()) {
+        if (sb.length() > 0) {
+          sb.append(" | ");
+        }
+        sb.append(current.getMessage());
+      }
+      current = current.getNextException();
+    }
+    return sb.toString();
   }
 }

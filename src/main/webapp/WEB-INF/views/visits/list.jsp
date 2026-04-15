@@ -61,8 +61,8 @@
                                                       title="${v.symptoms}">${v.symptoms}</span>
                                             </td>
                                             <td>
-                                                <span class="badge ${v.completed ? 'bg-success-subtle text-success border border-success-subtle' : 'bg-warning-subtle text-warning border border-warning-subtle'}">
-                                                    ${v.completed ? 'Completed' : 'Pending'}
+                                                <span class="badge ${(v.statusName eq 'Completed') ? 'bg-success-subtle text-success border border-success-subtle' : 'bg-warning-subtle text-warning border border-warning-subtle'}">
+                                                    ${(v.statusName eq 'Completed') ? 'Completed' : 'Pending'}
                                                 </span>
                                             </td>
                                             <td class="text-end px-4">

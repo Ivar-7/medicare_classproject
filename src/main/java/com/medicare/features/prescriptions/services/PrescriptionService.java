@@ -19,6 +19,14 @@ public class PrescriptionService {
         return prescriptionDAO.findById(id);
     }
 
+    public boolean prescriptionExists(int id) throws SQLException {
+        return prescriptionDAO.existsById(id);
+    }
+
+    public Optional<Integer> getPrescriptionVisitId(int id) throws SQLException {
+        return prescriptionDAO.findVisitIdByPrescriptionId(id);
+    }
+
     public List<Prescription> getPrescriptionsByVisit(int visitId) throws SQLException {
         return prescriptionDAO.findByVisit(visitId);
     }

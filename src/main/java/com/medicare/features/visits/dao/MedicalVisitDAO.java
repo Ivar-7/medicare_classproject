@@ -81,6 +81,39 @@ public class MedicalVisitDAO {
     }
   }
 
+  public boolean existsById(int visitId) throws SQLException {
+    String sql = "SELECT 1 FROM medical_visits WHERE visit_id = ? LIMIT 1";
+    try (Connection conn = DatabaseConfig.getConnection();
+        PreparedStatement ps = conn.prepareStatement(sql)) {
+      ps.setInt(1, visitId);
+      try (ResultSet rs = ps.executeQuery()) {
+        return rs.next();
+      }
+    }
+  }
+
+  public Optional<Integer> findDoctorIdById(int visitId) throws SQLException {
+    String sql = "SELECT doctor_id FROM medical_visits WHERE visit_id = ?";
+    try (Connection conn = DatabaseConfig.getConnection();
+        PreparedStatement ps = conn.prepareStatement(sql)) {
+      ps.setInt(1, visitId);
+      try (ResultSet rs = ps.executeQuery()) {
+        return rs.next() ? Optional.of(rs.getInt("doctor_id")) : Optional.empty();
+      }
+    }
+  }
+
+  public Optional<Integer> findStudentRegNumberById(int visitId) throws SQLException {
+    String sql = "SELECT reg_number FROM medical_visits WHERE visit_id = ?";
+    try (Connection conn = DatabaseConfig.getConnection();
+        PreparedStatement ps = conn.prepareStatement(sql)) {
+      ps.setInt(1, visitId);
+      try (ResultSet rs = ps.executeQuery()) {
+        return rs.next() ? Optional.of(rs.getInt("reg_number")) : Optional.empty();
+      }
+    }
+  }
+
   public List<MedicalVisit> findByStudent(int regNumber) throws SQLException {
     String sql = SELECT_WITH_JOINS + "WHERE v.reg_number = ? ORDER BY v.visit_date DESC";
     List<MedicalVisit> visits = new ArrayList<>();
