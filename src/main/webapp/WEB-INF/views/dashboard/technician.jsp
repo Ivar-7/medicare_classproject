@@ -20,28 +20,6 @@
             </div>
         </div>
 
-        <div class="row mb-4">
-            <div class="col-12">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-body p-4">
-                        <h5 class="fw-bold mb-3">Lab Technician IDs</h5>
-                        <c:choose>
-                            <c:when test="${empty technicianUsers}">
-                                <p class="text-muted mb-0">No lab technicians available.</p>
-                            </c:when>
-                            <c:otherwise>
-                                <div class="d-flex flex-wrap gap-2">
-                                    <c:forEach var="technician" items="${technicianUsers}">
-                                        <span class="badge bg-light text-dark border">#${technician.userId} - ${technician.firstName} ${technician.lastName}</span>
-                                    </c:forEach>
-                                </div>
-                            </c:otherwise>
-                        </c:choose>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <!-- Quick Stats -->
         <div class="row mb-4">
             <div class="col-md-6 col-lg-3">
