@@ -13,10 +13,13 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @WebServlet("/login")
 public class LoginServlet extends HttpServlet {
 
+    private static final Logger logger = Logger.getLogger(LoginServlet.class.getName());
     private final UserService userService = new UserService();
     private final RememberMeService rememberMeService = new RememberMeService();
 
@@ -38,8 +41,22 @@ public class LoginServlet extends HttpServlet {
         String password = request.getParameter("password");
         boolean rememberMe = "on".equalsIgnoreCase(request.getParameter("rememberMe"));
 
+        request.setAttribute("username", username);
+
+        if (username == null || username.trim().isEmpty()) {
+            request.setAttribute("error", "Username is required.");
+            request.getRequestDispatcher("/WEB-INF/views/auth/login.jsp").forward(request, response);
+            return;
+        }
+
+        if (password == null || password.trim().isEmpty()) {
+            request.setAttribute("error", "Password is required.");
+            request.getRequestDispatcher("/WEB-INF/views/auth/login.jsp").forward(request, response);
+            return;
+        }
+
         try {
-            Optional<User> user = userService.authenticate(username, password);
+            Optional<User> user = userService.authenticate(username.trim(), password);
             if (user.isPresent()) {
                 HttpSession session = request.getSession(true);
                 session.setAttribute("currentUser", user.get());
@@ -61,6 +78,7 @@ public class LoginServlet extends HttpServlet {
                 request.getRequestDispatcher("/WEB-INF/views/auth/login.jsp").forward(request, response);
             }
         } catch (Exception e) {
+            logger.log(Level.SEVERE, "LoginServlet POST error", e);
             request.setAttribute("error", "A system error occurred. Please try again.");
             request.getRequestDispatcher("/WEB-INF/views/auth/login.jsp").forward(request, response);
         }

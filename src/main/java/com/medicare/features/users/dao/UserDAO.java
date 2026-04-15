@@ -9,20 +9,55 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 public class UserDAO {
 
-    private User.Role parseRole(String dbRole) {
-        if (dbRole == null) {
-            return User.Role.Receptionist;
+    private LocalDate parseLocalDate(ResultSet rs, String column) throws SQLException {
+        String raw = rs.getString(column);
+        if (raw == null) {
+            return null;
         }
-        if ("Lab Technician".equalsIgnoreCase(dbRole)) {
-            return User.Role.Technician;
+        raw = raw.trim();
+        if (raw.isEmpty()) {
+            return null;
         }
-        return User.Role.valueOf(dbRole);
+
+        // Accept full ISO date values directly.
+        try {
+            return LocalDate.parse(raw);
+        } catch (DateTimeParseException ignored) {
+            // Continue with tolerant parsing below.
+        }
+
+        // Accept ISO date-time by using only the date portion.
+        if (raw.length() >= 10 && raw.charAt(4) == '-' && raw.charAt(7) == '-') {
+            try {
+                return LocalDate.parse(raw.substring(0, 10));
+            } catch (DateTimeParseException ignored) {
+                // Fall through to strict error below.
+            }
+        }
+
+        throw new SQLException("Invalid date value in column '" + column + "': " + raw);
+    }
+
+    private String toDbDate(LocalDate date) {
+        return date != null ? date.toString() : null;
+    }
+
+    private User.Role parseRole(String dbRole) throws SQLException {
+        if (dbRole == null || dbRole.isBlank()) {
+            throw new SQLException("Invalid role value in column 'role': " + dbRole);
+        }
+        try {
+            return User.Role.valueOf(dbRole);
+        } catch (IllegalArgumentException ex) {
+            throw new SQLException("Unsupported role value in column 'role': " + dbRole, ex);
+        }
     }
 
     private User mapRow(ResultSet rs) throws SQLException {
@@ -35,9 +70,9 @@ public class UserDAO {
             parseRole(rs.getString("role")),
             rs.getString("email"),
             rs.getString("phone"),
-            rs.getDate("date_of_employment") != null ? rs.getDate("date_of_employment").toLocalDate() : null,
-            rs.getDate("created_at") != null ? rs.getDate("created_at").toLocalDate() : null,
-            rs.getDate("updated_at") != null ? rs.getDate("updated_at").toLocalDate() : null
+            parseLocalDate(rs, "date_of_employment"),
+            parseLocalDate(rs, "created_at"),
+            parseLocalDate(rs, "updated_at")
         );
     }
 
@@ -74,6 +109,17 @@ public class UserDAO {
         }
     }
 
+    public Optional<User> findByEmail(String email) throws SQLException {
+        String sql = "SELECT * FROM users WHERE email = ?";
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, email);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() ? Optional.of(mapRow(rs)) : Optional.empty();
+            }
+        }
+    }
+
     public List<User> findByRole(String role) throws SQLException {
         String sql = "SELECT * FROM users WHERE role = ? ORDER BY first_name, last_name";
         List<User> users = new ArrayList<>();
@@ -99,9 +145,9 @@ public class UserDAO {
             ps.setString(5, user.getRole().name());
             ps.setString(6, user.getEmail());
             ps.setString(7, user.getPhone());
-            ps.setDate(8, user.getDateOfEmployment() != null ? java.sql.Date.valueOf(user.getDateOfEmployment()) : null);
-            ps.setDate(9, user.getCreatedAt() != null ? java.sql.Date.valueOf(user.getCreatedAt()) : null);
-            ps.setDate(10, user.getUpdatedAt() != null ? java.sql.Date.valueOf(user.getUpdatedAt()) : null);
+            ps.setString(8, toDbDate(user.getDateOfEmployment()));
+            ps.setString(9, toDbDate(user.getCreatedAt()));
+            ps.setString(10, toDbDate(user.getUpdatedAt()));
             ps.executeUpdate();
         }
     }
@@ -116,8 +162,8 @@ public class UserDAO {
             ps.setString(4, user.getRole().name());
             ps.setString(5, user.getEmail());
             ps.setString(6, user.getPhone());
-            ps.setDate(7, user.getDateOfEmployment() != null ? java.sql.Date.valueOf(user.getDateOfEmployment()) : null);
-            ps.setDate(8, java.sql.Date.valueOf(LocalDate.now()));
+            ps.setString(7, toDbDate(user.getDateOfEmployment()));
+            ps.setString(8, LocalDate.now().toString());
             ps.setInt(9, user.getUserId());
             ps.executeUpdate();
         }
@@ -128,7 +174,7 @@ public class UserDAO {
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, newHashedPassword);
-            ps.setDate(2, java.sql.Date.valueOf(LocalDate.now()));
+            ps.setString(2, LocalDate.now().toString());
             ps.setInt(3, userId);
             ps.executeUpdate();
         }

@@ -24,6 +24,10 @@ public class UserService {
         return userDAO.findByUsername(username);
     }
 
+    public Optional<User> getUserByEmail(String email) throws SQLException {
+        return userDAO.findByEmail(email);
+    }
+
     public Optional<User> authenticate(String username, String password) throws SQLException {
         Optional<User> user = userDAO.findByUsername(username);
         if (user.isPresent() && PasswordUtils.verify(password, user.get().getPasswordHash())) {

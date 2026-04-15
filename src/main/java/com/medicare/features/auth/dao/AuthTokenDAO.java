@@ -9,30 +9,55 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.Optional;
 
 public class AuthTokenDAO {
 
-    private User.Role parseRole(String dbRole) {
-        if (dbRole == null) {
-            return User.Role.Receptionist;
+    private LocalDate parseLocalDate(ResultSet rs, String column) throws SQLException {
+        String raw = rs.getString(column);
+        if (raw == null) {
+            return null;
         }
-        if ("Lab Technician".equalsIgnoreCase(dbRole)) {
-            return User.Role.Technician;
+        raw = raw.trim();
+        if (raw.isEmpty()) {
+            return null;
         }
-        return User.Role.valueOf(dbRole);
+
+        // Accept full ISO date values directly.
+        try {
+            return LocalDate.parse(raw);
+        } catch (DateTimeParseException ignored) {
+            // Continue with tolerant parsing below.
+        }
+
+        // Accept ISO date-time by using only the date portion.
+        if (raw.length() >= 10 && raw.charAt(4) == '-' && raw.charAt(7) == '-') {
+            try {
+                return LocalDate.parse(raw.substring(0, 10));
+            } catch (DateTimeParseException ignored) {
+                // Fall through to strict error below.
+            }
+        }
+
+        throw new SQLException("Invalid date value in column '" + column + "': " + raw);
+    }
+
+    private User.Role parseRole(String dbRole) throws SQLException {
+        if (dbRole == null || dbRole.isBlank()) {
+            throw new SQLException("Invalid role value in column 'role': " + dbRole);
+        }
+        try {
+            return User.Role.valueOf(dbRole);
+        } catch (IllegalArgumentException ex) {
+            throw new SQLException("Unsupported role value in column 'role': " + dbRole, ex);
+        }
     }
 
     private User mapUser(ResultSet rs) throws SQLException {
-        LocalDate dateOfEmployment = rs.getDate("date_of_employment") == null
-            ? null
-            : rs.getDate("date_of_employment").toLocalDate();
-        LocalDate createdAt = rs.getDate("created_at") == null
-            ? null
-            : rs.getDate("created_at").toLocalDate();
-        LocalDate updatedAt = rs.getDate("updated_at") == null
-            ? null
-            : rs.getDate("updated_at").toLocalDate();
+        LocalDate dateOfEmployment = parseLocalDate(rs, "date_of_employment");
+        LocalDate createdAt = parseLocalDate(rs, "created_at");
+        LocalDate updatedAt = parseLocalDate(rs, "updated_at");
 
         return new User(
             rs.getInt("user_id"),

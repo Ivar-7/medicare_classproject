@@ -47,6 +47,7 @@
                     <label for="username" class="form-label fw-medium small">Username</label>
                     <input type="text" class="form-control"
                            id="username" name="username"
+                           value="${username}"
                            placeholder="Enter your username"
                            autocomplete="username" required autofocus>
                 </div>

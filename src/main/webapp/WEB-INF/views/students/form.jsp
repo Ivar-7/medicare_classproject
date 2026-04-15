@@ -48,7 +48,7 @@
                         <label for="firstName" class="form-label">First Name</label>
                         <input id="firstName" name="firstName" type="text" class="form-control"
                                value="${student.firstName}" maxlength="80"
-                               pattern="[A-Za-z][A-Za-z\s'.-]*"
+                               pattern="[A-Za-z](?:[A-Za-z .']|-)*"
                                title="Use letters, spaces, apostrophes, dots, and hyphens only."
                                oninput="this.value=this.value.replace(/[0-9]/g,'')" required>
                     </div>
@@ -57,7 +57,7 @@
                         <label for="lastName" class="form-label">Last Name</label>
                         <input id="lastName" name="lastName" type="text" class="form-control"
                                value="${student.lastName}" maxlength="80"
-                               pattern="[A-Za-z][A-Za-z\s'.-]*"
+                               pattern="[A-Za-z](?:[A-Za-z .']|-)*"
                                title="Use letters, spaces, apostrophes, dots, and hyphens only."
                                oninput="this.value=this.value.replace(/[0-9]/g,'')" required>
                     </div>

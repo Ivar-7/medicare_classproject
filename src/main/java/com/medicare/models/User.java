@@ -50,12 +50,6 @@ public class User {
     public LocalDate getCreatedAt()         { return createdAt;         }
     public LocalDate getUpdatedAt()         { return updatedAt;         }
 
-    /** Convenience method to get full name from first and last name */
-    public String getFullName() {
-        if (firstName == null || lastName == null) return "";
-        return (firstName + " " + lastName).trim();
-    }
-
     /** Convenience method for EL comparisons: ${user.roleName == 'Admin'} */
     public String getRoleName() { return role != null ? role.name() : ""; }
 
@@ -75,6 +69,6 @@ public class User {
 
     @Override
     public String toString() {
-        return "User{userId=" + userId + ", username='" + username + "', fullName='" + getFullName() + "', role=" + role + "}";
+        return "User{userId=" + userId + ", username='" + username + "', firstName='" + firstName + "', lastName='" + lastName + "', role=" + role + "}";
     }
 }

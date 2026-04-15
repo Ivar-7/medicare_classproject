@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.regex.Pattern;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -71,35 +72,53 @@ public class UserServlet extends HttpServlet {
         String lastName = ServletRequestUtils.trim(request.getParameter("lastName"));
         String email = ServletRequestUtils.trim(request.getParameter("email"));
         String phone = ServletRequestUtils.trim(request.getParameter("phone"));
+        String dateOfEmploymentRaw = ServletRequestUtils.trim(request.getParameter("dateOfEmployment"));
         String roleRaw = ServletRequestUtils.trim(request.getParameter("role"));
         String password = ServletRequestUtils.trim(request.getParameter("password"));
 
         boolean isCreate = userIdRaw == null || userIdRaw.isBlank();
 
         if (username == null || username.isBlank()) {
-            forwardWithError(request, response, "Username is required.", userIdRaw, username, firstName, lastName, email, phone, roleRaw);
+            forwardWithError(request, response, "Username is required.", userIdRaw, username, firstName, lastName, email, phone, dateOfEmploymentRaw, roleRaw);
             return;
         }
         if (firstName == null || firstName.isBlank()) {
-            forwardWithError(request, response, "First name is required.", userIdRaw, username, firstName, lastName, email, phone, roleRaw);
+            forwardWithError(request, response, "First name is required.", userIdRaw, username, firstName, lastName, email, phone, dateOfEmploymentRaw, roleRaw);
             return;
         }
         if (lastName == null || lastName.isBlank()) {
-            forwardWithError(request, response, "Last name is required.", userIdRaw, username, firstName, lastName, email, phone, roleRaw);
+            forwardWithError(request, response, "Last name is required.", userIdRaw, username, firstName, lastName, email, phone, dateOfEmploymentRaw, roleRaw);
             return;
         }
         if (!NAME_PATTERN.matcher(firstName).matches() || !NAME_PATTERN.matcher(lastName).matches()) {
             forwardWithError(request, response, "Names cannot contain numbers.",
-                             userIdRaw, username, firstName, lastName, email, phone, roleRaw);
+                             userIdRaw, username, firstName, lastName, email, phone, dateOfEmploymentRaw, roleRaw);
             return;
         }
+
+        LocalDate dateOfEmployment = null;
+        if (dateOfEmploymentRaw != null && !dateOfEmploymentRaw.isBlank()) {
+            try {
+                dateOfEmployment = LocalDate.parse(dateOfEmploymentRaw);
+            } catch (DateTimeParseException e) {
+                forwardWithError(request, response, "Date of employment must be a valid date.",
+                                 userIdRaw, username, firstName, lastName, email, phone, dateOfEmploymentRaw, roleRaw);
+                return;
+            }
+            if (dateOfEmployment.isAfter(LocalDate.now())) {
+                forwardWithError(request, response, "Date of employment cannot be in the future.",
+                                 userIdRaw, username, firstName, lastName, email, phone, dateOfEmploymentRaw, roleRaw);
+                return;
+            }
+        }
+
         if (roleRaw == null || roleRaw.isBlank()) {
-            forwardWithError(request, response, "Role is required.", userIdRaw, username, firstName, lastName, email, phone, roleRaw);
+            forwardWithError(request, response, "Role is required.", userIdRaw, username, firstName, lastName, email, phone, dateOfEmploymentRaw, roleRaw);
             return;
         }
         if (isCreate && (password == null || password.isBlank())) {
             forwardWithError(request, response, "Password is required when creating a user.",
-                             userIdRaw, username, firstName, lastName, email, phone, roleRaw);
+                             userIdRaw, username, firstName, lastName, email, phone, dateOfEmploymentRaw, roleRaw);
             return;
         }
 
@@ -107,7 +126,7 @@ public class UserServlet extends HttpServlet {
         try {
             role = User.Role.valueOf(roleRaw);
         } catch (IllegalArgumentException e) {
-            forwardWithError(request, response, "Invalid role selected.", userIdRaw, username, firstName, lastName, email, phone, roleRaw);
+            forwardWithError(request, response, "Invalid role selected.", userIdRaw, username, firstName, lastName, email, phone, dateOfEmploymentRaw, roleRaw);
             return;
         }
 
@@ -119,7 +138,7 @@ public class UserServlet extends HttpServlet {
                     throw new NumberFormatException("userId must be positive");
                 }
             } catch (NumberFormatException e) {
-                forwardWithError(request, response, "Invalid user ID.", userIdRaw, username, firstName, lastName, email, phone, roleRaw);
+                forwardWithError(request, response, "Invalid user ID.", userIdRaw, username, firstName, lastName, email, phone, dateOfEmploymentRaw, roleRaw);
                 return;
             }
         }
@@ -127,7 +146,7 @@ public class UserServlet extends HttpServlet {
         try {
             if (usernameTakenForDifferentUser(username, userId)) {
                 forwardWithError(request, response, "Username is already in use.",
-                                 userIdRaw, username, firstName, lastName, email, phone, roleRaw);
+                                 userIdRaw, username, firstName, lastName, email, phone, dateOfEmploymentRaw, roleRaw);
                 return;
             }
 
@@ -138,11 +157,11 @@ public class UserServlet extends HttpServlet {
             user.setEmail(email);
             user.setPhone(phone);
             user.setRole(role);
+            user.setDateOfEmployment(dateOfEmployment);
 
             if (isCreate) {
                 LocalDate today = LocalDate.now();
                 user.setPasswordHash(password);
-                user.setDateOfEmployment(today);
                 user.setCreatedAt(today);
                 user.setUpdatedAt(today);
                 userService.createUser(user);
@@ -199,6 +218,7 @@ public class UserServlet extends HttpServlet {
                                   String lastName,
                                   String email,
                                   String phone,
+                                  String dateOfEmploymentRaw,
                                   String roleRaw) throws ServletException, IOException {
         User user = new User();
 
@@ -215,6 +235,15 @@ public class UserServlet extends HttpServlet {
         user.setLastName(lastName);
         user.setEmail(email);
         user.setPhone(phone);
+
+        if (dateOfEmploymentRaw != null && !dateOfEmploymentRaw.isBlank()) {
+            request.setAttribute("dateOfEmployment", dateOfEmploymentRaw);
+            try {
+                user.setDateOfEmployment(LocalDate.parse(dateOfEmploymentRaw));
+            } catch (DateTimeParseException ignored) {
+                // Keep raw value in request attribute so user can correct it.
+            }
+        }
 
         if (roleRaw != null && !roleRaw.isBlank()) {
             try {

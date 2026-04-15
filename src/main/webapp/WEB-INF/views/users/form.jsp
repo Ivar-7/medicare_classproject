@@ -34,7 +34,7 @@
                         <label for="firstName" class="form-label">First Name</label>
                         <input id="firstName" name="firstName" type="text" class="form-control"
                                value="${user.firstName}" maxlength="80"
-                               pattern="[A-Za-z][A-Za-z\s'.-]*"
+                               pattern="[A-Za-z](?:[A-Za-z .']|-)*"
                                title="Use letters, spaces, apostrophes, dots, and hyphens only."
                                oninput="this.value=this.value.replace(/[0-9]/g,'')" required>
                     </div>
@@ -43,7 +43,7 @@
                         <label for="lastName" class="form-label">Last Name</label>
                         <input id="lastName" name="lastName" type="text" class="form-control"
                                value="${user.lastName}" maxlength="80"
-                               pattern="[A-Za-z][A-Za-z\s'.-]*"
+                               pattern="[A-Za-z](?:[A-Za-z .']|-)*"
                                title="Use letters, spaces, apostrophes, dots, and hyphens only."
                                oninput="this.value=this.value.replace(/[0-9]/g,'')" required>
                     </div>
@@ -64,6 +64,13 @@
                         <label for="phone" class="form-label">Phone</label>
                         <input id="phone" name="phone" type="text" class="form-control"
                                value="${user.phone}" maxlength="30">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="dateOfEmployment" class="form-label">Date of Employment</label>
+                        <input id="dateOfEmployment" name="dateOfEmployment" type="date" class="form-control"
+                               value="${not empty dateOfEmployment ? dateOfEmployment : user.dateOfEmployment}">
+                        <div class="form-text">Optional.</div>
                     </div>
 
                     <div class="col-md-6">

@@ -11,7 +11,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -50,8 +52,17 @@ public class RegisterServlet extends HttpServlet {
     String username = ServletRequestUtils.trim(request.getParameter("username"));
     String email = ServletRequestUtils.trim(request.getParameter("email"));
     String phone = ServletRequestUtils.trim(request.getParameter("phone"));
+    String dateOfEmploymentRaw = ServletRequestUtils.trim(request.getParameter("dateOfEmployment"));
     String password = ServletRequestUtils.trim(request.getParameter("password"));
     String roleRaw = ServletRequestUtils.trim(request.getParameter("role"));
+
+    request.setAttribute("firstName", firstName);
+    request.setAttribute("lastName", lastName);
+    request.setAttribute("username", username);
+    request.setAttribute("email", email);
+    request.setAttribute("phone", phone);
+    request.setAttribute("dateOfEmployment", dateOfEmploymentRaw);
+    request.setAttribute("role", roleRaw);
 
     if (firstName == null || firstName.isBlank()) {
       request.setAttribute("error", "First name is required.");
@@ -141,8 +152,28 @@ public class RegisterServlet extends HttpServlet {
       return;
     }
 
+    LocalDate dateOfEmployment = null;
+    if (dateOfEmploymentRaw != null && !dateOfEmploymentRaw.isBlank()) {
+      try {
+        dateOfEmployment = LocalDate.parse(dateOfEmploymentRaw);
+      } catch (DateTimeParseException e) {
+        request.setAttribute("error", "Date of employment must be a valid date.");
+        request.getRequestDispatcher("/WEB-INF/views/auth/register.jsp").forward(request, response);
+        return;
+      }
+
+      if (dateOfEmployment.isAfter(LocalDate.now())) {
+        request.setAttribute("error", "Date of employment cannot be in the future.");
+        request.getRequestDispatcher("/WEB-INF/views/auth/register.jsp").forward(request, response);
+        return;
+      }
+    }
+
     try {
       boolean usernameTaken = userService.getUserByUsername(username).isPresent();
+      boolean emailTaken = email != null
+          && !email.isBlank()
+          && userService.getUserByEmail(email).isPresent();
 
       if (usernameTaken) {
         request.setAttribute("error", "Username is already in use.");
@@ -156,6 +187,12 @@ public class RegisterServlet extends HttpServlet {
         return;
       }
 
+      if (emailTaken) {
+        request.setAttribute("error", "Email is already in use.");
+        request.getRequestDispatcher("/WEB-INF/views/auth/register.jsp").forward(request, response);
+        return;
+      }
+
       User newUser = new User();
       newUser.setFirstName(firstName);
       newUser.setLastName(lastName);
@@ -164,7 +201,7 @@ public class RegisterServlet extends HttpServlet {
       newUser.setRole(role);
       newUser.setEmail(email);
       newUser.setPhone(phone);
-      newUser.setDateOfEmployment(LocalDate.now());
+      newUser.setDateOfEmployment(dateOfEmployment);
       newUser.setCreatedAt(LocalDate.now());
       newUser.setUpdatedAt(LocalDate.now());
 
@@ -173,15 +210,20 @@ public class RegisterServlet extends HttpServlet {
       request.setAttribute("success", "Registration successful! Please log in.");
       request.getRequestDispatcher("/WEB-INF/views/auth/login.jsp").forward(request, response);
 
+    } catch (SQLException e) {
+      logger.log(Level.SEVERE, "RegisterServlet POST error", e);
+      String sqlMessage = e.getMessage() != null ? e.getMessage().toLowerCase() : "";
+      if (sqlMessage.contains("unique constraint failed: users.email")) {
+        request.setAttribute("error", "Email is already in use.");
+      } else if (sqlMessage.contains("unique constraint failed: users.username")) {
+        request.setAttribute("error", "Username is already in use.");
+      } else {
+        request.setAttribute("error", "A system error occurred during registration. Please try again.");
+      }
+      request.getRequestDispatcher("/WEB-INF/views/auth/register.jsp").forward(request, response);
     } catch (Exception e) {
       logger.log(Level.SEVERE, "RegisterServlet POST error", e);
       request.setAttribute("error", "A system error occurred during registration. Please try again.");
-      request.setAttribute("firstName", firstName);
-      request.setAttribute("lastName", lastName);
-      request.setAttribute("username", username);
-      request.setAttribute("email", email);
-      request.setAttribute("phone", phone);
-      request.setAttribute("role", roleRaw);
       request.getRequestDispatcher("/WEB-INF/views/auth/register.jsp").forward(request, response);
     }
   }
