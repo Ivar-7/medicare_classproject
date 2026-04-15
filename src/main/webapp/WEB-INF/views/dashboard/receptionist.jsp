@@ -13,7 +13,7 @@
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <h3 class="fw-bold mb-1">
-                            <i class="bi bi-house-door text-primary me-2"></i>Welcome, ${sessionScope.currentUser.fullName}
+                            <i class="bi bi-house-door text-primary me-2"></i>Welcome, ${sessionScope.currentUser.firstName} ${sessionScope.currentUser.lastName}
                         </h3>
                         <p class="text-muted mb-0">Receptionist Dashboard</p>
                     </div>

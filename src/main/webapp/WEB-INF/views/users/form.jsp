@@ -31,9 +31,18 @@
                     <input type="hidden" name="userId" value="${user.userId}">
 
                     <div class="col-md-6">
-                        <label for="fullName" class="form-label">Full Name</label>
-                        <input id="fullName" name="fullName" type="text" class="form-control"
-                               value="${user.fullName}" maxlength="120"
+                        <label for="firstName" class="form-label">First Name</label>
+                        <input id="firstName" name="firstName" type="text" class="form-control"
+                               value="${user.firstName}" maxlength="80"
+                               pattern="[A-Za-z][A-Za-z\s'.-]*"
+                               title="Use letters, spaces, apostrophes, dots, and hyphens only."
+                               oninput="this.value=this.value.replace(/[0-9]/g,'')" required>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="lastName" class="form-label">Last Name</label>
+                        <input id="lastName" name="lastName" type="text" class="form-control"
+                               value="${user.lastName}" maxlength="80"
                                pattern="[A-Za-z][A-Za-z\s'.-]*"
                                title="Use letters, spaces, apostrophes, dots, and hyphens only."
                                oninput="this.value=this.value.replace(/[0-9]/g,'')" required>
@@ -46,12 +55,25 @@
                     </div>
 
                     <div class="col-md-6">
+                        <label for="email" class="form-label">Email</label>
+                        <input id="email" name="email" type="email" class="form-control"
+                               value="${user.email}" maxlength="120">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="phone" class="form-label">Phone</label>
+                        <input id="phone" name="phone" type="text" class="form-control"
+                               value="${user.phone}" maxlength="30">
+                    </div>
+
+                    <div class="col-md-6">
                         <label for="role" class="form-label">Role</label>
                         <select id="role" name="role" class="form-select" required>
                             <option value="" ${empty user.roleName ? 'selected' : ''}>Select role</option>
                             <option value="Admin" ${user.roleName == 'Admin' ? 'selected' : ''}>Admin</option>
                             <option value="Doctor" ${user.roleName == 'Doctor' ? 'selected' : ''}>Doctor</option>
                             <option value="Receptionist" ${user.roleName == 'Receptionist' ? 'selected' : ''}>Receptionist</option>
+                            <option value="Technician" ${user.roleName == 'Technician' ? 'selected' : ''}>Technician</option>
                         </select>
                     </div>
 

@@ -13,6 +13,16 @@ import java.util.Optional;
 
 public class AuthTokenDAO {
 
+    private User.Role parseRole(String dbRole) {
+        if (dbRole == null) {
+            return User.Role.Receptionist;
+        }
+        if ("Lab Technician".equalsIgnoreCase(dbRole)) {
+            return User.Role.Technician;
+        }
+        return User.Role.valueOf(dbRole);
+    }
+
     private User mapUser(ResultSet rs) throws SQLException {
         LocalDate dateOfEmployment = rs.getDate("date_of_employment") == null
             ? null
@@ -30,7 +40,7 @@ public class AuthTokenDAO {
             rs.getString("password_hash"),
             rs.getString("first_name"),
             rs.getString("last_name"),
-            User.Role.valueOf(rs.getString("role")),
+            parseRole(rs.getString("role")),
             rs.getString("email"),
             rs.getString("phone"),
             dateOfEmployment,

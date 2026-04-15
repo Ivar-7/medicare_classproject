@@ -88,7 +88,7 @@
                     <a class="nav-link dropdown-toggle d-flex align-items-center gap-2 px-3 rounded"
                        href="#" role="button" data-bs-toggle="dropdown" id="userDropdown">
                         <i class="bi bi-person-circle fs-5"></i>
-                        <span>${sessionScope.currentUser.fullName}</span>
+                        <span>${sessionScope.currentUser.firstName} ${sessionScope.currentUser.lastName}</span>
                         <c:choose>
                             <c:when test="${sessionScope.currentUser.roleName == 'Receptionist'}">
                                 <span class="badge bg-success fw-normal ms-1">Reception</span>

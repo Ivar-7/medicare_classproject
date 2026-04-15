@@ -45,9 +45,18 @@
                     </div>
 
                     <div class="col-md-6">
-                        <label for="fullName" class="form-label">Full Name</label>
-                        <input id="fullName" name="fullName" type="text" class="form-control"
-                               value="${student.fullName}" maxlength="120"
+                        <label for="firstName" class="form-label">First Name</label>
+                        <input id="firstName" name="firstName" type="text" class="form-control"
+                               value="${student.firstName}" maxlength="80"
+                               pattern="[A-Za-z][A-Za-z\s'.-]*"
+                               title="Use letters, spaces, apostrophes, dots, and hyphens only."
+                               oninput="this.value=this.value.replace(/[0-9]/g,'')" required>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="lastName" class="form-label">Last Name</label>
+                        <input id="lastName" name="lastName" type="text" class="form-control"
+                               value="${student.lastName}" maxlength="80"
                                pattern="[A-Za-z][A-Za-z\s'.-]*"
                                title="Use letters, spaces, apostrophes, dots, and hyphens only."
                                oninput="this.value=this.value.replace(/[0-9]/g,'')" required>
@@ -59,26 +68,34 @@
                                value="${student.dob}" required>
                     </div>
 
-                    <div class="col-md-4">
-                        <label for="gender" class="form-label">Gender</label>
-                        <select id="gender" name="gender" class="form-select" required>
-                            <option value="" ${empty student.gender ? 'selected' : ''}>Select gender</option>
-                            <option value="Male" ${student.gender == 'Male' ? 'selected' : ''}>Male</option>
-                            <option value="Female" ${student.gender == 'Female' ? 'selected' : ''}>Female</option>
-                            <option value="Other" ${student.gender == 'Other' ? 'selected' : ''}>Other</option>
-                        </select>
-                    </div>
-
-                    <div class="col-md-4">
+                    <div class="col-md-8">
                         <label for="faculty" class="form-label">Faculty</label>
                         <input id="faculty" name="faculty" type="text" class="form-control"
                                value="${student.faculty}" maxlength="100" required>
                     </div>
 
-                    <div class="col-12">
-                        <label for="contact" class="form-label">Contact</label>
-                        <input id="contact" name="contact" type="text" class="form-control"
-                               value="${student.contact}" maxlength="100" required>
+                    <div class="col-md-6">
+                        <label for="email" class="form-label">Email</label>
+                        <input id="email" name="email" type="email" class="form-control"
+                               value="${student.email}" maxlength="120">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="phone" class="form-label">Phone</label>
+                        <input id="phone" name="phone" type="text" class="form-control"
+                               value="${student.phone}" maxlength="30">
+                    </div>
+
+                    <div class="col-md-8">
+                        <label for="address" class="form-label">Address</label>
+                        <input id="address" name="address" type="text" class="form-control"
+                               value="${student.address}" maxlength="160">
+                    </div>
+
+                    <div class="col-md-4">
+                        <label for="emergencyContact" class="form-label">Emergency Contact</label>
+                        <input id="emergencyContact" name="emergencyContact" type="text" class="form-control"
+                               value="${student.emergencyContact}" maxlength="80">
                     </div>
 
                     <div class="col-12 d-flex gap-2 pt-2">

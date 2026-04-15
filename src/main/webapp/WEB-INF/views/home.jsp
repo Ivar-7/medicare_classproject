@@ -14,7 +14,7 @@
         <div class="d-flex justify-content-between align-items-start mb-4">
             <div>
                 <h4 class="mb-1 fw-bold text-dark">
-                    Welcome back, <span class="text-primary">${sessionScope.currentUser.fullName}</span>
+                    Welcome back, <span class="text-primary">${sessionScope.currentUser.firstName} ${sessionScope.currentUser.lastName}</span>
                 </h4>
                 <p class="text-muted mb-0">
                     <i class="bi bi-calendar3 me-1"></i>

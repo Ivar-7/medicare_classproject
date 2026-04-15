@@ -31,10 +31,19 @@
                             </c:if>
 
                             <form method="post" action="${pageContext.request.contextPath}/register" class="row g-3">
-                                <div class="col-12">
-                                    <label for="fullName" class="form-label">Full Name</label>
-                                    <input id="fullName" name="fullName" type="text" class="form-control"
-                                           value="${fullName}" placeholder="Enter your full name" maxlength="120"
+                                <div class="col-md-6">
+                                    <label for="firstName" class="form-label">First Name</label>
+                                    <input id="firstName" name="firstName" type="text" class="form-control"
+                                           value="${firstName}" placeholder="Enter first name" maxlength="80"
+                                           pattern="[A-Za-z][A-Za-z\s'.-]*"
+                                           title="Use letters, spaces, apostrophes, dots, and hyphens only."
+                                           oninput="this.value=this.value.replace(/[0-9]/g,'')" required>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="lastName" class="form-label">Last Name</label>
+                                    <input id="lastName" name="lastName" type="text" class="form-control"
+                                           value="${lastName}" placeholder="Enter last name" maxlength="80"
                                            pattern="[A-Za-z][A-Za-z\s'.-]*"
                                            title="Use letters, spaces, apostrophes, dots, and hyphens only."
                                            oninput="this.value=this.value.replace(/[0-9]/g,'')" required>
@@ -44,6 +53,18 @@
                                     <label for="username" class="form-label">Username</label>
                                     <input id="username" name="username" type="text" class="form-control"
                                            value="${username}" placeholder="Create a unique username" maxlength="80" required>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="email" class="form-label">Email</label>
+                                    <input id="email" name="email" type="email" class="form-control"
+                                           value="${email}" placeholder="name@example.com" maxlength="120">
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="phone" class="form-label">Phone</label>
+                                    <input id="phone" name="phone" type="text" class="form-control"
+                                           value="${phone}" placeholder="e.g. +260..." maxlength="30">
                                 </div>
 
                                 <div class="col-12">

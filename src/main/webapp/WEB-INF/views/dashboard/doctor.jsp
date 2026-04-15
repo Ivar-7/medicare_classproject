@@ -12,7 +12,7 @@
             <div class="col-12">
                 <div>
                     <h3 class="fw-bold mb-1">
-                        <i class="bi bi-stethoscope text-primary me-2"></i>Welcome, Dr. ${sessionScope.currentUser.fullName}
+                        <i class="bi bi-stethoscope text-primary me-2"></i>Welcome, Dr. ${sessionScope.currentUser.firstName} ${sessionScope.currentUser.lastName}
                     </h3>
                     <p class="text-muted mb-0">Doctor Dashboard - Manage Patient Visits</p>
                 </div>

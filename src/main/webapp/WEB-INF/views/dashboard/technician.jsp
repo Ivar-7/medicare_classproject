@@ -12,7 +12,7 @@
             <div class="col-12">
                 <div>
                     <h3 class="fw-bold mb-1">
-                        <i class="bi bi-beaker text-primary me-2"></i>Welcome, ${sessionScope.currentUser.fullName}
+                        <i class="bi bi-beaker text-primary me-2"></i>Welcome, ${sessionScope.currentUser.firstName} ${sessionScope.currentUser.lastName}
                     </h3>
                     <p class="text-muted mb-0">Lab Technician Dashboard - Patient Test Notes</p>
                 </div>
@@ -109,7 +109,7 @@
                                                 <c:if test="${status.count <= 10}">
                                                 <tr>
                                                     <td class="px-4 fw-medium">${student.regNumber}</td>
-                                                    <td>${student.fullName}</td>
+                                                    <td>${student.firstName} ${student.lastName}</td>
                                                     <td class="text-muted small">${student.faculty}</td>
                                                     <td class="text-end px-4">
                                                         <a href="${pageContext.request.contextPath}/notes/student/${student.regNumber}"

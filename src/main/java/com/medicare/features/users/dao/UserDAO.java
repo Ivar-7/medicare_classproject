@@ -15,6 +15,16 @@ import java.util.Optional;
 
 public class UserDAO {
 
+    private User.Role parseRole(String dbRole) {
+        if (dbRole == null) {
+            return User.Role.Receptionist;
+        }
+        if ("Lab Technician".equalsIgnoreCase(dbRole)) {
+            return User.Role.Technician;
+        }
+        return User.Role.valueOf(dbRole);
+    }
+
     private User mapRow(ResultSet rs) throws SQLException {
         return new User(
             rs.getInt("user_id"),
@@ -22,7 +32,7 @@ public class UserDAO {
             rs.getString("password_hash"),
             rs.getString("first_name"),
             rs.getString("last_name"),
-            User.Role.valueOf(rs.getString("role")),
+            parseRole(rs.getString("role")),
             rs.getString("email"),
             rs.getString("phone"),
             rs.getDate("date_of_employment") != null ? rs.getDate("date_of_employment").toLocalDate() : null,
@@ -97,19 +107,18 @@ public class UserDAO {
     }
 
     public void update(User user) throws SQLException {
-        String sql = "UPDATE users SET username=?, password_hash=?, first_name=?, last_name=?, role=?, email=?, phone=?, date_of_employment=?, updated_at=? WHERE user_id=?";
+        String sql = "UPDATE users SET username=?, first_name=?, last_name=?, role=?, email=?, phone=?, date_of_employment=?, updated_at=? WHERE user_id=?";
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, user.getUsername());
-            ps.setString(2, user.getPasswordHash());
-            ps.setString(3, user.getFirstName());
-            ps.setString(4, user.getLastName());
-            ps.setString(5, user.getRole().name());
-            ps.setString(6, user.getEmail());
-            ps.setString(7, user.getPhone());
-            ps.setDate(8, user.getDateOfEmployment() != null ? java.sql.Date.valueOf(user.getDateOfEmployment()) : null);
-            ps.setDate(9, LocalDate.now() == null ? null : java.sql.Date.valueOf(LocalDate.now()));
-            ps.setInt(10, user.getUserId());
+            ps.setString(2, user.getFirstName());
+            ps.setString(3, user.getLastName());
+            ps.setString(4, user.getRole().name());
+            ps.setString(5, user.getEmail());
+            ps.setString(6, user.getPhone());
+            ps.setDate(7, user.getDateOfEmployment() != null ? java.sql.Date.valueOf(user.getDateOfEmployment()) : null);
+            ps.setDate(8, java.sql.Date.valueOf(LocalDate.now()));
+            ps.setInt(9, user.getUserId());
             ps.executeUpdate();
         }
     }

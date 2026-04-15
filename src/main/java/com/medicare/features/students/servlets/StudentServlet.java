@@ -20,7 +20,7 @@ import java.util.logging.Logger;
 public class StudentServlet extends HttpServlet {
 
   private static final Logger logger = Logger.getLogger(StudentServlet.class.getName());
-  private static final Pattern FULL_NAME_PATTERN = Pattern.compile("^[A-Za-z][A-Za-z\\s'.-]*$");
+  private static final Pattern NAME_PATTERN = Pattern.compile("^[A-Za-z][A-Za-z\\s'.-]*$");
 
   private final StudentService studentService = new StudentService();
 
@@ -72,48 +72,51 @@ public class StudentServlet extends HttpServlet {
   private void saveStudent(HttpServletRequest request, HttpServletResponse response)
       throws ServletException, IOException {
     String originalRegNumber = ServletRequestUtils.trim(request.getParameter("originalRegNumber"));
-    String regNumber = ServletRequestUtils.trim(request.getParameter("regNumber"));
-    String fullName = ServletRequestUtils.trim(request.getParameter("fullName"));
+    String regNumberRaw = ServletRequestUtils.trim(request.getParameter("regNumber"));
+    String firstName = ServletRequestUtils.trim(request.getParameter("firstName"));
+    String lastName = ServletRequestUtils.trim(request.getParameter("lastName"));
     String dobRaw = ServletRequestUtils.trim(request.getParameter("dob"));
-    String gender = ServletRequestUtils.trim(request.getParameter("gender"));
     String faculty = ServletRequestUtils.trim(request.getParameter("faculty"));
-    String contact = ServletRequestUtils.trim(request.getParameter("contact"));
+    String email = ServletRequestUtils.trim(request.getParameter("email"));
+    String phone = ServletRequestUtils.trim(request.getParameter("phone"));
+    String address = ServletRequestUtils.trim(request.getParameter("address"));
+    String emergencyContact = ServletRequestUtils.trim(request.getParameter("emergencyContact"));
 
     boolean isCreate = originalRegNumber == null || originalRegNumber.isBlank();
 
-    if (regNumber == null || regNumber.isBlank()) {
+    if (regNumberRaw == null || regNumberRaw.isBlank() || !regNumberRaw.matches("\\d+")) {
       forwardWithError(request, response, "Registration number is required.",
-          originalRegNumber, regNumber, fullName, dobRaw, gender, faculty, contact);
+          originalRegNumber, regNumberRaw, firstName, lastName, dobRaw, faculty, email, phone, address,
+          emergencyContact);
+      return;
+    }
+    int regNumber = Integer.parseInt(regNumberRaw);
+
+    if (firstName == null || firstName.isBlank()) {
+      forwardWithError(request, response, "First name is required.",
+          originalRegNumber, regNumberRaw, firstName, lastName, dobRaw, faculty, email, phone, address,
+          emergencyContact);
       return;
     }
 
-    if (fullName == null || fullName.isBlank()) {
-      forwardWithError(request, response, "Full name is required.",
-          originalRegNumber, regNumber, fullName, dobRaw, gender, faculty, contact);
+    if (lastName == null || lastName.isBlank()) {
+      forwardWithError(request, response, "Last name is required.",
+          originalRegNumber, regNumberRaw, firstName, lastName, dobRaw, faculty, email, phone, address,
+          emergencyContact);
       return;
     }
 
-    if (!FULL_NAME_PATTERN.matcher(fullName).matches()) {
-      forwardWithError(request, response, "Full name cannot contain numbers.",
-          originalRegNumber, regNumber, fullName, dobRaw, gender, faculty, contact);
-      return;
-    }
-
-    if (gender == null || gender.isBlank()) {
-      forwardWithError(request, response, "Gender is required.",
-          originalRegNumber, regNumber, fullName, dobRaw, gender, faculty, contact);
+    if (!NAME_PATTERN.matcher(firstName).matches() || !NAME_PATTERN.matcher(lastName).matches()) {
+      forwardWithError(request, response, "Names cannot contain numbers.",
+          originalRegNumber, regNumberRaw, firstName, lastName, dobRaw, faculty, email, phone, address,
+          emergencyContact);
       return;
     }
 
     if (faculty == null || faculty.isBlank()) {
       forwardWithError(request, response, "Faculty is required.",
-          originalRegNumber, regNumber, fullName, dobRaw, gender, faculty, contact);
-      return;
-    }
-
-    if (contact == null || contact.isBlank()) {
-      forwardWithError(request, response, "Contact information is required.",
-          originalRegNumber, regNumber, fullName, dobRaw, gender, faculty, contact);
+          originalRegNumber, regNumberRaw, firstName, lastName, dobRaw, faculty, email, phone, address,
+          emergencyContact);
       return;
     }
 
@@ -122,33 +125,35 @@ public class StudentServlet extends HttpServlet {
       dob = LocalDate.parse(dobRaw);
     } catch (DateTimeParseException | NullPointerException e) {
       forwardWithError(request, response, "A valid date of birth is required.",
-          originalRegNumber, regNumber, fullName, dobRaw, gender, faculty, contact);
+          originalRegNumber, regNumberRaw, firstName, lastName, dobRaw, faculty, email, phone, address,
+          emergencyContact);
       return;
     }
 
     if (dob.isAfter(LocalDate.now())) {
       forwardWithError(request, response, "Date of birth cannot be in the future.",
-          originalRegNumber, regNumber, fullName, dobRaw, gender, faculty, contact);
+          originalRegNumber, regNumberRaw, firstName, lastName, dobRaw, faculty, email, phone, address,
+          emergencyContact);
       return;
     }
 
     Student student = new Student();
-    String[] nameParts = fullName.trim().split("\\s+", 2);
-    student.setRegNumber(Integer.parseInt(regNumber));
-    student.setFirstName(nameParts[0]);
-    student.setLastName(nameParts.length > 1 ? nameParts[1] : "");
+    student.setRegNumber(regNumber);
+    student.setFirstName(firstName);
+    student.setLastName(lastName);
     student.setDob(dob);
     student.setFaculty(faculty);
-    student.setEmail("");
-    student.setPhone("");
-    student.setAddress("");
-    student.setEmergencyContact("");
+    student.setEmail(email);
+    student.setPhone(phone);
+    student.setAddress(address);
+    student.setEmergencyContact(emergencyContact);
 
     try {
       if (isCreate) {
-        if (studentService.getStudentByRegNumber(Integer.parseInt(regNumber)).isPresent()) {
+        if (studentService.getStudentByRegNumber(regNumber).isPresent()) {
           forwardWithError(request, response, "Registration number already exists.",
-              originalRegNumber, regNumber, fullName, dobRaw, gender, faculty, contact);
+              originalRegNumber, regNumberRaw, firstName, lastName, dobRaw, faculty, email, phone, address,
+              emergencyContact);
           return;
         }
         studentService.createStudent(student);
@@ -157,9 +162,10 @@ public class StudentServlet extends HttpServlet {
         return;
       }
 
-      if (!originalRegNumber.equals(regNumber)) {
+      if (!originalRegNumber.equals(regNumberRaw)) {
         forwardWithError(request, response, "Registration number cannot be changed.",
-            originalRegNumber, originalRegNumber, fullName, dobRaw, gender, faculty, contact);
+        originalRegNumber, originalRegNumber, firstName, lastName, dobRaw, faculty, email, phone, address,
+        emergencyContact);
         return;
       }
 
@@ -175,15 +181,15 @@ public class StudentServlet extends HttpServlet {
 
   private void deleteStudent(HttpServletRequest request, HttpServletResponse response)
       throws IOException {
-    String regNumber = ServletRequestUtils.trim(request.getParameter("regNumber"));
-    if (regNumber == null || regNumber.isBlank()) {
+    String regNumberRaw = ServletRequestUtils.trim(request.getParameter("regNumber"));
+    if (regNumberRaw == null || regNumberRaw.isBlank() || !regNumberRaw.matches("\\d+")) {
       ServletRequestUtils.redirectWithMessage(request, response, "/students", "error",
           "Registration number is required to delete.");
       return;
     }
 
     try {
-      studentService.deleteStudent(Integer.parseInt(regNumber));
+      studentService.deleteStudent(Integer.parseInt(regNumberRaw));
       ServletRequestUtils.redirectWithMessage(request, response, "/students", "success",
           "Student deleted successfully.");
     } catch (Exception e) {
@@ -197,18 +203,26 @@ public class StudentServlet extends HttpServlet {
       HttpServletResponse response,
       String errorMessage,
       String originalRegNumber,
-      String regNumber,
-      String fullName,
+      String regNumberRaw,
+      String firstName,
+      String lastName,
       String dobRaw,
-      String gender,
       String faculty,
-      String contact) throws ServletException, IOException {
+      String email,
+      String phone,
+      String address,
+      String emergencyContact) throws ServletException, IOException {
     Student student = new Student();
-    String[] nameParts = fullName.trim().split("\\s+", 2);
-    student.setRegNumber(Integer.parseInt(regNumber));
-    student.setFirstName(nameParts[0]);
-    student.setLastName(nameParts.length > 1 ? nameParts[1] : "");
+    if (regNumberRaw != null && regNumberRaw.matches("\\d+")) {
+      student.setRegNumber(Integer.parseInt(regNumberRaw));
+    }
+    student.setFirstName(firstName);
+    student.setLastName(lastName);
     student.setFaculty(faculty);
+    student.setEmail(email);
+    student.setPhone(phone);
+    student.setAddress(address);
+    student.setEmergencyContact(emergencyContact);
 
     if (dobRaw != null && !dobRaw.isBlank()) {
       try {

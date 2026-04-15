@@ -45,7 +45,7 @@
                                     <c:forEach var="u" items="${users}">
                                         <tr>
                                             <td class="px-4 text-muted small font-monospace">#${u.userId}</td>
-                                            <td class="fw-medium">${u.fullName}</td>
+                                            <td class="fw-medium">${u.firstName} ${u.lastName}</td>
                                             <td>
                                                 <span class="badge bg-light text-dark border font-monospace fw-normal">
                                                     ${u.username}
@@ -58,6 +58,9 @@
                                                     </c:when>
                                                     <c:when test="${u.roleName == 'Doctor'}">
                                                         <span class="badge bg-primary-subtle text-primary border border-primary-subtle">Doctor</span>
+                                                    </c:when>
+                                                    <c:when test="${u.roleName == 'Technician'}">
+                                                        <span class="badge bg-warning-subtle text-warning border border-warning-subtle">Technician</span>
                                                     </c:when>
                                                     <c:otherwise>
                                                         <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle">Receptionist</span>

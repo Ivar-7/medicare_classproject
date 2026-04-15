@@ -59,8 +59,8 @@
                                         <th class="px-4 py-3">Reg Number</th>
                                         <th class="py-3">Full Name</th>
                                         <th class="py-3">Faculty</th>
-                                        <th class="py-3">Gender</th>
-                                        <th class="py-3">Contact</th>
+                                        <th class="py-3">Email</th>
+                                        <th class="py-3">Phone</th>
                                         <th class="py-3 text-end px-4">Actions</th>
                                     </tr>
                                 </thead>
@@ -72,10 +72,10 @@
                                                     ${s.regNumber}
                                                 </span>
                                             </td>
-                                            <td class="fw-medium">${s.fullName}</td>
+                                            <td class="fw-medium">${s.firstName} ${s.lastName}</td>
                                             <td class="text-muted">${s.faculty}</td>
-                                            <td>${s.gender}</td>
-                                            <td class="text-muted">${s.contact}</td>
+                                            <td class="text-muted">${s.email}</td>
+                                            <td class="text-muted">${s.phone}</td>
                                             <td class="text-end px-4">
                                                 <a href="${pageContext.request.contextPath}/students/${s.regNumber}"
                                                    class="btn btn-sm btn-outline-secondary">

@@ -11,13 +11,16 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
-import java.util.regex.Pattern;
 import java.time.LocalDate;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 @WebServlet("/register")
 public class RegisterServlet extends HttpServlet {
 
-  private static final Pattern FULL_NAME_PATTERN = Pattern.compile("^[A-Za-z][A-Za-z\\s'.-]*$");
+  private static final Logger logger = Logger.getLogger(RegisterServlet.class.getName());
+  private static final Pattern NAME_PATTERN = Pattern.compile("^[A-Za-z][A-Za-z\\s'.-]*$");
 
   private final UserService userService = new UserService();
 
@@ -42,21 +45,36 @@ public class RegisterServlet extends HttpServlet {
       return;
     }
 
-    String fullName = ServletRequestUtils.trim(request.getParameter("fullName"));
+    String firstName = ServletRequestUtils.trim(request.getParameter("firstName"));
+    String lastName = ServletRequestUtils.trim(request.getParameter("lastName"));
     String username = ServletRequestUtils.trim(request.getParameter("username"));
+    String email = ServletRequestUtils.trim(request.getParameter("email"));
+    String phone = ServletRequestUtils.trim(request.getParameter("phone"));
     String password = ServletRequestUtils.trim(request.getParameter("password"));
     String roleRaw = ServletRequestUtils.trim(request.getParameter("role"));
 
-    if (fullName == null || fullName.isBlank()) {
-      request.setAttribute("error", "Full name is required.");
+    if (firstName == null || firstName.isBlank()) {
+      request.setAttribute("error", "First name is required.");
+      request.getRequestDispatcher("/WEB-INF/views/auth/register.jsp").forward(request, response);
+      return;
+    }
+    if (lastName == null || lastName.isBlank()) {
+      request.setAttribute("error", "Last name is required.");
+      request.setAttribute("firstName", firstName);
+      request.setAttribute("username", username);
+      request.setAttribute("email", email);
+      request.setAttribute("phone", phone);
       request.getRequestDispatcher("/WEB-INF/views/auth/register.jsp").forward(request, response);
       return;
     }
 
-    if (!FULL_NAME_PATTERN.matcher(fullName).matches()) {
-      request.setAttribute("error", "Full name cannot contain numbers.");
-      request.setAttribute("fullName", fullName);
+    if (!NAME_PATTERN.matcher(firstName).matches() || !NAME_PATTERN.matcher(lastName).matches()) {
+      request.setAttribute("error", "Names cannot contain numbers.");
+      request.setAttribute("firstName", firstName);
+      request.setAttribute("lastName", lastName);
       request.setAttribute("username", username);
+      request.setAttribute("email", email);
+      request.setAttribute("phone", phone);
       request.setAttribute("role", roleRaw);
       request.getRequestDispatcher("/WEB-INF/views/auth/register.jsp").forward(request, response);
       return;
@@ -64,7 +82,10 @@ public class RegisterServlet extends HttpServlet {
 
     if (username == null || username.isBlank()) {
       request.setAttribute("error", "Username is required.");
-      request.setAttribute("fullName", fullName);
+      request.setAttribute("firstName", firstName);
+      request.setAttribute("lastName", lastName);
+      request.setAttribute("email", email);
+      request.setAttribute("phone", phone);
       request.setAttribute("role", roleRaw);
       request.getRequestDispatcher("/WEB-INF/views/auth/register.jsp").forward(request, response);
       return;
@@ -72,8 +93,11 @@ public class RegisterServlet extends HttpServlet {
 
     if (password == null || password.isBlank()) {
       request.setAttribute("error", "Password is required.");
-      request.setAttribute("fullName", fullName);
+      request.setAttribute("firstName", firstName);
+      request.setAttribute("lastName", lastName);
       request.setAttribute("username", username);
+      request.setAttribute("email", email);
+      request.setAttribute("phone", phone);
       request.setAttribute("role", roleRaw);
       request.getRequestDispatcher("/WEB-INF/views/auth/register.jsp").forward(request, response);
       return;
@@ -81,8 +105,11 @@ public class RegisterServlet extends HttpServlet {
 
     if (roleRaw == null || roleRaw.isBlank()) {
       request.setAttribute("error", "Role is required.");
-      request.setAttribute("fullName", fullName);
+      request.setAttribute("firstName", firstName);
+      request.setAttribute("lastName", lastName);
       request.setAttribute("username", username);
+      request.setAttribute("email", email);
+      request.setAttribute("phone", phone);
       request.setAttribute("role", roleRaw);
       request.getRequestDispatcher("/WEB-INF/views/auth/register.jsp").forward(request, response);
       return;
@@ -93,16 +120,22 @@ public class RegisterServlet extends HttpServlet {
       role = User.Role.valueOf(roleRaw);
       if (role == User.Role.Admin) {
         request.setAttribute("error", "Cannot register with Admin role.");
-        request.setAttribute("fullName", fullName);
+        request.setAttribute("firstName", firstName);
+        request.setAttribute("lastName", lastName);
         request.setAttribute("username", username);
+        request.setAttribute("email", email);
+        request.setAttribute("phone", phone);
         request.setAttribute("role", roleRaw);
         request.getRequestDispatcher("/WEB-INF/views/auth/register.jsp").forward(request, response);
         return;
       }
     } catch (IllegalArgumentException e) {
       request.setAttribute("error", "Invalid role selected.");
-      request.setAttribute("fullName", fullName);
+      request.setAttribute("firstName", firstName);
+      request.setAttribute("lastName", lastName);
       request.setAttribute("username", username);
+      request.setAttribute("email", email);
+      request.setAttribute("phone", phone);
       request.setAttribute("role", roleRaw);
       request.getRequestDispatcher("/WEB-INF/views/auth/register.jsp").forward(request, response);
       return;
@@ -113,22 +146,24 @@ public class RegisterServlet extends HttpServlet {
 
       if (usernameTaken) {
         request.setAttribute("error", "Username is already in use.");
-        request.setAttribute("fullName", fullName);
+        request.setAttribute("firstName", firstName);
+        request.setAttribute("lastName", lastName);
         request.setAttribute("username", username);
+        request.setAttribute("email", email);
+        request.setAttribute("phone", phone);
         request.setAttribute("role", roleRaw);
         request.getRequestDispatcher("/WEB-INF/views/auth/register.jsp").forward(request, response);
         return;
       }
 
       User newUser = new User();
-      String[] nameParts = fullName.trim().split("\\s+", 2);
-      String firstName = nameParts[0];
-      String lastName = nameParts.length > 1 ? nameParts[1] : "";
       newUser.setFirstName(firstName);
       newUser.setLastName(lastName);
       newUser.setUsername(username);
       newUser.setPasswordHash(password);
       newUser.setRole(role);
+      newUser.setEmail(email);
+      newUser.setPhone(phone);
       newUser.setDateOfEmployment(LocalDate.now());
       newUser.setCreatedAt(LocalDate.now());
       newUser.setUpdatedAt(LocalDate.now());
@@ -139,9 +174,13 @@ public class RegisterServlet extends HttpServlet {
       request.getRequestDispatcher("/WEB-INF/views/auth/login.jsp").forward(request, response);
 
     } catch (Exception e) {
+      logger.log(Level.SEVERE, "RegisterServlet POST error", e);
       request.setAttribute("error", "A system error occurred during registration. Please try again.");
-      request.setAttribute("fullName", fullName);
+      request.setAttribute("firstName", firstName);
+      request.setAttribute("lastName", lastName);
       request.setAttribute("username", username);
+      request.setAttribute("email", email);
+      request.setAttribute("phone", phone);
       request.setAttribute("role", roleRaw);
       request.getRequestDispatcher("/WEB-INF/views/auth/register.jsp").forward(request, response);
     }

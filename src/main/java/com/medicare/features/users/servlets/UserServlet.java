@@ -19,7 +19,7 @@ import java.util.logging.Logger;
 public class UserServlet extends HttpServlet {
 
     private static final Logger logger = Logger.getLogger(UserServlet.class.getName());
-    private static final Pattern FULL_NAME_PATTERN = Pattern.compile("^[A-Za-z][A-Za-z\\s'.-]*$");
+    private static final Pattern NAME_PATTERN = Pattern.compile("^[A-Za-z][A-Za-z\\s'.-]*$");
 
     private final UserService userService = new UserService();
 
@@ -67,32 +67,39 @@ public class UserServlet extends HttpServlet {
             throws ServletException, IOException {
         String userIdRaw = ServletRequestUtils.trim(request.getParameter("userId"));
         String username = ServletRequestUtils.trim(request.getParameter("username"));
-        String fullName = ServletRequestUtils.trim(request.getParameter("fullName"));
+        String firstName = ServletRequestUtils.trim(request.getParameter("firstName"));
+        String lastName = ServletRequestUtils.trim(request.getParameter("lastName"));
+        String email = ServletRequestUtils.trim(request.getParameter("email"));
+        String phone = ServletRequestUtils.trim(request.getParameter("phone"));
         String roleRaw = ServletRequestUtils.trim(request.getParameter("role"));
         String password = ServletRequestUtils.trim(request.getParameter("password"));
 
         boolean isCreate = userIdRaw == null || userIdRaw.isBlank();
 
         if (username == null || username.isBlank()) {
-            forwardWithError(request, response, "Username is required.", userIdRaw, username, fullName, roleRaw);
+            forwardWithError(request, response, "Username is required.", userIdRaw, username, firstName, lastName, email, phone, roleRaw);
             return;
         }
-        if (fullName == null || fullName.isBlank()) {
-            forwardWithError(request, response, "Full name is required.", userIdRaw, username, fullName, roleRaw);
+        if (firstName == null || firstName.isBlank()) {
+            forwardWithError(request, response, "First name is required.", userIdRaw, username, firstName, lastName, email, phone, roleRaw);
             return;
         }
-        if (!FULL_NAME_PATTERN.matcher(fullName).matches()) {
-            forwardWithError(request, response, "Full name cannot contain numbers.",
-                             userIdRaw, username, fullName, roleRaw);
+        if (lastName == null || lastName.isBlank()) {
+            forwardWithError(request, response, "Last name is required.", userIdRaw, username, firstName, lastName, email, phone, roleRaw);
+            return;
+        }
+        if (!NAME_PATTERN.matcher(firstName).matches() || !NAME_PATTERN.matcher(lastName).matches()) {
+            forwardWithError(request, response, "Names cannot contain numbers.",
+                             userIdRaw, username, firstName, lastName, email, phone, roleRaw);
             return;
         }
         if (roleRaw == null || roleRaw.isBlank()) {
-            forwardWithError(request, response, "Role is required.", userIdRaw, username, fullName, roleRaw);
+            forwardWithError(request, response, "Role is required.", userIdRaw, username, firstName, lastName, email, phone, roleRaw);
             return;
         }
         if (isCreate && (password == null || password.isBlank())) {
             forwardWithError(request, response, "Password is required when creating a user.",
-                             userIdRaw, username, fullName, roleRaw);
+                             userIdRaw, username, firstName, lastName, email, phone, roleRaw);
             return;
         }
 
@@ -100,7 +107,7 @@ public class UserServlet extends HttpServlet {
         try {
             role = User.Role.valueOf(roleRaw);
         } catch (IllegalArgumentException e) {
-            forwardWithError(request, response, "Invalid role selected.", userIdRaw, username, fullName, roleRaw);
+            forwardWithError(request, response, "Invalid role selected.", userIdRaw, username, firstName, lastName, email, phone, roleRaw);
             return;
         }
 
@@ -112,7 +119,7 @@ public class UserServlet extends HttpServlet {
                     throw new NumberFormatException("userId must be positive");
                 }
             } catch (NumberFormatException e) {
-                forwardWithError(request, response, "Invalid user ID.", userIdRaw, username, fullName, roleRaw);
+                forwardWithError(request, response, "Invalid user ID.", userIdRaw, username, firstName, lastName, email, phone, roleRaw);
                 return;
             }
         }
@@ -120,15 +127,16 @@ public class UserServlet extends HttpServlet {
         try {
             if (usernameTakenForDifferentUser(username, userId)) {
                 forwardWithError(request, response, "Username is already in use.",
-                                 userIdRaw, username, fullName, roleRaw);
+                                 userIdRaw, username, firstName, lastName, email, phone, roleRaw);
                 return;
             }
 
             User user = new User();
             user.setUsername(username);
-            String[] nameParts = fullName.trim().split("\\s+", 2);
-            user.setFirstName(nameParts[0]);
-            user.setLastName(nameParts.length > 1 ? nameParts[1] : "");
+            user.setFirstName(firstName);
+            user.setLastName(lastName);
+            user.setEmail(email);
+            user.setPhone(phone);
             user.setRole(role);
 
             if (isCreate) {
@@ -187,7 +195,10 @@ public class UserServlet extends HttpServlet {
                                   String errorMessage,
                                   String userIdRaw,
                                   String username,
-                                  String fullName,
+                                  String firstName,
+                                  String lastName,
+                                  String email,
+                                  String phone,
                                   String roleRaw) throws ServletException, IOException {
         User user = new User();
 
@@ -200,11 +211,10 @@ public class UserServlet extends HttpServlet {
         }
 
         user.setUsername(username);
-        if (fullName != null && !fullName.isBlank()) {
-            String[] nameParts = fullName.trim().split("\\s+", 2);
-            user.setFirstName(nameParts[0]);
-            user.setLastName(nameParts.length > 1 ? nameParts[1] : "");
-        }
+        user.setFirstName(firstName);
+        user.setLastName(lastName);
+        user.setEmail(email);
+        user.setPhone(phone);
 
         if (roleRaw != null && !roleRaw.isBlank()) {
             try {
