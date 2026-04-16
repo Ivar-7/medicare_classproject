@@ -1,8 +1,9 @@
 package com.medicare.models;
 
 import java.time.LocalDateTime;
+import java.io.Serializable;
 
-public class AuditLog {
+public class AuditLog implements Serializable {
 
     private int           logId;
     private int           userId;

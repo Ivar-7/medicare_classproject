@@ -1,8 +1,9 @@
 package com.medicare.models;
 
 import java.time.LocalDate;
+import java.io.Serializable;
 
-public class LabResult {
+public class LabResult implements Serializable {
 
   private int resultId;
   private int patientId;

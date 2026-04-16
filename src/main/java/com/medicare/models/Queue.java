@@ -1,8 +1,9 @@
 package com.medicare.models;
 
 import java.time.LocalDate;
+import java.io.Serializable;
 
-public class Queue {
+public class Queue implements Serializable {
 
     public enum Status { Waiting, InConsultation, Completed, Cancelled }
     public enum PriorityLevel { Low, Medium, High, Emergency }

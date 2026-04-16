@@ -1,8 +1,9 @@
 package com.medicare.models;
 
 import java.time.LocalDate;
+import java.io.Serializable;
 
-public class LabRequest {
+public class LabRequest implements Serializable {
 
   public enum Status {
     Pending, InProgress, Completed, Cancelled
@@ -102,7 +103,8 @@ public class LabRequest {
   }
 
   /**
-   * Convenience method for EL comparisons: ${labRequest.priorityName == 'Routine'}
+   * Convenience method for EL comparisons: ${labRequest.priorityName ==
+   * 'Routine'}
    */
   public String getPriorityName() {
     return priority != null ? priority.name() : "";

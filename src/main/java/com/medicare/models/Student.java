@@ -1,8 +1,9 @@
 package com.medicare.models;
 
 import java.time.LocalDate;
+import java.io.Serializable;
 
-public class Student {
+public class Student implements Serializable {
 
   private int regNumber;
   private String firstName;

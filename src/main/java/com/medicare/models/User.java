@@ -1,8 +1,9 @@
 package com.medicare.models;
 
 import java.time.LocalDate;
+import java.io.Serializable;
 
-public class User {
+public class User implements Serializable {
 
     public enum Role { Admin, Doctor, Receptionist, Technician }
 

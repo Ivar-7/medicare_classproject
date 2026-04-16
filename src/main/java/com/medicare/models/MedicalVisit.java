@@ -1,8 +1,9 @@
 package com.medicare.models;
 
 import java.time.LocalDate;
+import java.io.Serializable;
 
-public class MedicalVisit {
+public class MedicalVisit implements Serializable {
 
   public enum Status {
     Scheduled, Ongoing, Completed

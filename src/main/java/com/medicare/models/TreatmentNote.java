@@ -1,8 +1,9 @@
 package com.medicare.models;
 
 import java.time.LocalDate;
+import java.io.Serializable;
 
-public class TreatmentNote {
+public class TreatmentNote implements Serializable {
 
     private int       noteId;
     private int       visitId;

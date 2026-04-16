@@ -1,8 +1,9 @@
 package com.medicare.models;
 
 import java.time.LocalDate;
+import java.io.Serializable;
 
-public class Prescription {
+public class Prescription implements Serializable {
 
   private int prescriptionId;
   private int visitId;
